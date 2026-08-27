@@ -488,6 +488,28 @@ input[type=range]:focus-visible{outline:2px solid #fff;outline-offset:3px;}
 .lb-nameRow input:focus{border-color:var(--neon-cyan);box-shadow:0 0 12px rgba(0,246,255,0.3);}
 .neon-btn.lb-savebtn{padding:9px 18px;font-size:12px;}
 
+.lb-nameMsg{
+  font-size:12px;
+  font-family:'Share Tech Mono',monospace;
+  color:#8a7fb5;
+  min-height:16px;
+}
+.lb-nameMsg.good{color:#57ffa1;}
+.lb-nameMsg.bad{color:#ff9d6b;}
+.lb-sep{
+  text-align:center;
+  color:#4a4370;
+  font-size:15px;
+  letter-spacing:3px;
+  padding:2px 0;
+}
+.lb-foot{
+  text-align:center;
+  font-size:11.5px;
+  color:#6f6795;
+  padding:6px 0 2px;
+  font-family:'Share Tech Mono',monospace;
+}
 .lb-tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .lb-tab{
   font-family:'Orbitron',sans-serif;
@@ -881,6 +903,7 @@ body.potato .neon-btn:hover{transform:none;}
     <input id="lbName" type="text" maxlength="16" placeholder="Anónimo" autocomplete="off">
     <button id="lbSaveName" class="neon-btn lb-savebtn">GUARDAR</button>
   </div>
+  <div id="lbNameMsg" class="lb-nameMsg"></div>
   <div id="lbTabs" class="lb-tabs"></div>
   <div id="lbList" class="lb-list"></div>
   <button id="rankingBackBtn" class="neon-btn">VOLVER</button>
@@ -941,55 +964,87 @@ addEventListener("resize",()=>{ resizeCanvas(); initStars(); });
 /* ================= STORAGE (récord + progreso persistente) ================= */
 /* ============================================================
    RANKING ONLINE (Supabase)
-   Pegá acá los dos valores de tu proyecto:
-   Supabase → Project Settings → API
-     · SUPABASE_URL  = "Project URL"
-     · SUPABASE_KEY  = la clave pública "anon"
-   Si quedan vacíos, el juego funciona igual: el ranking
-   simplemente aparece como no disponible.
+   Pegá acá los dos valores de tu proyecto (Settings → API Keys
+   y Settings → Data API). Si quedan vacíos, el juego funciona
+   igual y el ranking aparece como no disponible.
    ============================================================ */
 const SUPABASE_URL="https://hthzuxfsjrtccgfpciro.supabase.co";
 const SUPABASE_KEY="sb_publishable_voKvq8298Qt10vvaf2p5tw_de7B36qO";
-const LB_TABLE="scores";
-// tolera que peguen la URL con /rest/v1/ al final o con barra sobrante
-const LB_BASE=()=>SUPABASE_URL.replace(/\/+$/,"").replace(/\/rest\/v1$/,"");
 const LB_ENABLED=()=>SUPABASE_URL.length>0 && SUPABASE_KEY.length>0;
+const LB_BASE=()=>SUPABASE_URL.replace(/\/+$/,"").replace(/\/rest\/v1$/,"");
 
 const NAME_KEY="hexShooterDefinitivo_nombre";
+const PID_KEY="hexShooterDefinitivo_pid";
 let playerName="";
+let playerId="";
+
+/* La identidad real es este ID, no el nombre. Así el jugador puede
+   cambiarse el nombre sin duplicar su fila en la tabla. */
+function ensurePlayerId(){
+  if(playerId) return playerId;
+  try{
+    playerId=(crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+  }catch(e){ playerId=null; }
+  if(!playerId){
+    playerId="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,ch=>{
+      const r=Math.random()*16|0;
+      return (ch==="x"?r:((r&0x3)|0x8)).toString(16);
+    });
+  }
+  StorageHelper.set(PID_KEY,playerId);
+  return playerId;
+}
 
 function lbHeaders(extra){
   const h={ "apikey":SUPABASE_KEY, "Content-Type":"application/json" };
-  // Las claves viejas (anon) son JWT y empiezan con "eyJ": esas van también
-  // como Bearer. Las nuevas (sb_publishable_...) no lo son y solo usan apikey.
+  // las claves viejas (anon) son JWT y empiezan con "eyJ"; las nuevas no
   if(SUPABASE_KEY.startsWith("eyJ")) h["Authorization"]="Bearer "+SUPABASE_KEY;
   return Object.assign(h,extra||{});
 }
 
-/* Se manda también la duración: sirve para que más adelante puedas
-   rechazar del lado del servidor puntajes imposibles para ese tiempo. */
-async function submitScore(puntos,dificultad,duracion){
-  if(!LB_ENABLED() || !playerName || puntos<=0) return false;
+async function lbRpc(fn,args){
+  if(!LB_ENABLED()) return null;
   try{
-    const r=await fetch(LB_BASE()+"/rest/v1/"+LB_TABLE,{
-      method:"POST",
-      headers:lbHeaders({"Prefer":"return=minimal"}),
-      body:JSON.stringify({nombre:playerName,puntos:Math.round(puntos),dificultad,duracion:Math.round(duracion)})
+    const r=await fetch(LB_BASE()+"/rest/v1/rpc/"+fn,{
+      method:"POST", headers:lbHeaders(), body:JSON.stringify(args)
     });
-    return r.ok;
-  }catch(e){ return false; }
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+
+// registra el nombre o lo cambia (el servidor decide si pasaron los 7 días)
+async function saveName(nombre){
+  return await lbRpc("set_nombre",{p_id:ensurePlayerId(), p_nombre:nombre});
+}
+
+/* Guarda el puntaje sólo si supera el propio: el servidor hace el
+   greatest(), así cinco partidas dejan una sola fila con la mejor. */
+async function submitScore(puntos,dificultad,duracion){
+  if(!LB_ENABLED() || !playerName || puntos<=0) return null;
+  return await lbRpc("guardar_puntaje",{
+    p_id:ensurePlayerId(), p_dif:dificultad,
+    p_puntos:Math.round(puntos), p_duracion:Math.round(duracion)
+  });
 }
 
 async function fetchTop(dificultad,limite=10){
   if(!LB_ENABLED()) return null;
   try{
-    const url=LB_BASE()+"/rest/v1/"+LB_TABLE+
-      "?select=nombre,puntos&dificultad=eq."+encodeURIComponent(dificultad)+
+    const url=LB_BASE()+"/rest/v1/scores"+
+      "?select=puntos,player_id,players(nombre)"+
+      "&dificultad=eq."+encodeURIComponent(dificultad)+
       "&order=puntos.desc&limit="+limite;
     const r=await fetch(url,{headers:lbHeaders()});
     if(!r.ok) return null;
     return await r.json();
   }catch(e){ return null; }
+}
+
+// puesto propio, para mostrarlo aunque esté fuera del top 10
+async function fetchMyRank(dificultad){
+  if(!playerId) return null;
+  return await lbRpc("mi_puesto",{p_id:playerId, p_dif:dificultad});
 }
 
 const HS_KEY="hexShooterDefinitivo_highscore";
@@ -2200,8 +2255,10 @@ function endGame(finalMessage="PERDISTE"){
     }else{
       aviso.innerHTML="Enviando al ranking...";
       aviso.classList.remove("hidden");
-      submitScore(score,diff().key,time).then(ok=>{
-        aviso.innerHTML = ok ? "✔ Puntaje enviado al ranking" : "⚠ No se pudo enviar el puntaje";
+      submitScore(score,diff().key,time).then(r=>{
+        if(!r) aviso.innerHTML="⚠ No se pudo enviar el puntaje";
+        else if(r.mejorado) aviso.innerHTML="✔ ¡Nuevo mejor puntaje en el ranking!";
+        else aviso.innerHTML="Tu mejor puntaje sigue siendo "+Number(r.mejor||0).toLocaleString("es-AR");
       });
     }
   }
@@ -2226,6 +2283,7 @@ let lbTab=0;
 function lbMsg(icono,texto){
   lbListEl.innerHTML='<div class="lb-msg"><span class="lb-msg-icon">'+icono+'</span><span>'+texto+'</span></div>';
 }
+function lbSafe(t){ return String(t||"?").replace(/[<>&]/g,""); }
 
 function renderLbTabs(){
   document.getElementById("lbTabs").innerHTML=DIFFICULTIES.map((d,i)=>
@@ -2234,33 +2292,49 @@ function renderLbTabs(){
   ).join("");
 }
 
+function lbRow(pos,nombre,puntos,esMio){
+  const top=pos<=3?(" top"+pos):"";
+  return '<div class="lb-row'+top+(esMio?" isMe":"")+'">'+
+    '<span class="lb-pos">'+pos+'</span>'+
+    '<span class="lb-name">'+lbSafe(nombre)+'</span>'+
+    '<span class="lb-pts">'+Number(puntos).toLocaleString("es-AR")+'</span>'+
+  '</div>';
+}
+
 async function loadLeaderboard(){
   renderLbTabs();
   if(!LB_ENABLED()){
-    lbMsg("🔌","El ranking online todavía no está configurado.<br>Faltan las credenciales de Supabase en el código.");
+    lbMsg("🔌","El ranking online todavía no está configurado.");
     return;
   }
   lbMsg("⏳","Cargando...");
   const d=DIFFICULTIES[lbTab];
-  const filas=await fetchTop(d.key,10);
+  const [filas,mio]=await Promise.all([fetchTop(d.key,10), fetchMyRank(d.key)]);
+
   if(filas===null){
     lbMsg("📡","No se pudo conectar con el ranking.<br>Revisá tu conexión e intentá de nuevo.");
     return;
   }
+
+  let html="";
   if(filas.length===0){
-    lbMsg("🏁","Todavía no hay puntajes en "+d.name+".<br>¡Podés ser el primero!");
-    return;
+    html='<div class="lb-msg"><span class="lb-msg-icon">🏁</span><span>Todavía no hay puntajes en '+d.name+'.<br>¡Podés ser el primero!</span></div>';
+  }else{
+    html=filas.map((f,i)=>{
+      const nombre=(f.players&&f.players.nombre)?f.players.nombre:"?";
+      return lbRow(i+1,nombre,f.puntos,f.player_id===playerId);
+    }).join("");
   }
-  lbListEl.innerHTML=filas.map((f,i)=>{
-    const top=i<3?(" top"+(i+1)):"";
-    const yo=(f.nombre===playerName)?" isMe":"";
-    const nombre=String(f.nombre||"?").replace(/[<>&]/g,"");
-    return '<div class="lb-row'+top+yo+'">'+
-      '<span class="lb-pos">'+(i+1)+'</span>'+
-      '<span class="lb-name">'+nombre+'</span>'+
-      '<span class="lb-pts">'+Number(f.puntos).toLocaleString("es-AR")+'</span>'+
-    '</div>';
-  }).join("");
+
+  // si el jugador quedó fuera del top 10, se agrega su fila con su puesto real
+  const enTop = filas.some(f=>f.player_id===playerId);
+  if(mio && mio.tiene && !enTop){
+    html+='<div class="lb-sep">···</div>'+lbRow(mio.puesto,playerName,mio.puntos,true);
+    html+='<div class="lb-foot">de '+Number(mio.total).toLocaleString("es-AR")+' jugadores</div>';
+  }else if(mio && !mio.tiene && playerName){
+    html+='<div class="lb-foot">Todavía no tenés puntaje en '+d.name+'</div>';
+  }
+  lbListEl.innerHTML=html;
 }
 
 document.getElementById("lbTabs").addEventListener("click",e=>{
@@ -2271,18 +2345,42 @@ document.getElementById("lbTabs").addEventListener("click",e=>{
   loadLeaderboard();
 });
 
-document.getElementById("lbSaveName").onclick=()=>{
+function lbNameStatus(txt,cls){
+  const el=document.getElementById("lbNameMsg");
+  el.className="lb-nameMsg "+(cls||"");
+  el.innerHTML=txt;
+}
+
+document.getElementById("lbSaveName").onclick=async ()=>{
   const v=document.getElementById("lbName").value.trim().slice(0,16);
-  playerName=v;
-  StorageHelper.set(NAME_KEY,v);
-  sfxUiBlip(880);
-  loadLeaderboard();
+  if(v.length<3){ lbNameStatus("El nombre necesita al menos 3 letras","bad"); sfxUiBlip(220); return; }
+  lbNameStatus("Guardando...","");
+  const r=await saveName(v);
+  if(!r){ lbNameStatus("No se pudo conectar con el servidor","bad"); return; }
+  if(r.ok){
+    playerName=v;
+    StorageHelper.set(NAME_KEY,v);
+    lbNameStatus(r.nuevo?"✔ Nombre registrado":"✔ Nombre actualizado","good");
+    sfxUiBlip(880);
+    loadLeaderboard();
+  }else if(r.motivo==="espera"){
+    lbNameStatus("Podés cambiar el nombre en "+r.dias+" día"+(r.dias>1?"s":""),"bad");
+    document.getElementById("lbName").value=playerName;
+    sfxUiBlip(220);
+  }else if(r.motivo==="tomado"){
+    lbNameStatus("Ese nombre ya está en uso","bad");
+    sfxUiBlip(220);
+  }else{
+    lbNameStatus("El nombre debe tener entre 3 y 16 caracteres","bad");
+    sfxUiBlip(220);
+  }
 };
 
 document.getElementById("rankingBtn").onclick=()=>{
   sfxUiBlip(760);
   lbTab=currentDifficulty;
   document.getElementById("lbName").value=playerName;
+  lbNameStatus(playerName?"":"Registrate para aparecer en la tabla","");
   menuScreen.classList.add("hidden");
   rankingScreen.classList.remove("hidden");
   loadLeaderboard();
@@ -3935,6 +4033,7 @@ StorageHelper.get(META_KEY,null).then(v=>{
 });
 StorageHelper.get(POTATO_KEY,false).then(v=>{ applyPotatoMode(!!v); });
 StorageHelper.get(NAME_KEY,"").then(v=>{ playerName=v||""; });
+StorageHelper.get(PID_KEY,"").then(v=>{ if(v) playerId=v; });
 </script>
 </body>
 </html>
