@@ -20,7 +20,18 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg-void);}
-body{font-family:'Share Tech Mono',monospace;color:#fff;}
+body{
+  font-family:'Share Tech Mono',monospace;color:#fff;
+  /* en un juego no hay nada para copiar: evita selecciones accidentales al
+     arrastrar y el cursor de texto parpadeando sobre carteles como el del boss */
+  -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  cursor:default;
+}
+/* los campos de escritura sí tienen que dejarse seleccionar */
+input,textarea{
+  -webkit-user-select:text; -moz-user-select:text; -ms-user-select:text; user-select:text;
+}
 canvas{display:block;background:var(--bg-void);cursor:crosshair;}
 
 .hidden{display:none !important;}
@@ -853,7 +864,7 @@ body.potato .neon-btn:hover{transform:none;}
   <div class="btn-row menu-main">
     <span class="play-group">
       <button id="playBtn" class="neon-btn pink">JUGAR</button>
-      <button id="diffArrowBtn" class="neon-btn pink play-arrow" title="Elegir dificultad">▸</button>
+      <button id="diffArrowBtn" class="neon-btn pink play-arrow" aria-label="Elegir dificultad">▸</button>
     </span>
     <button id="skillTreeBtn" class="neon-btn">MEJORAS</button>
     <button id="rankingBtn" class="neon-btn">RANKING</button>
@@ -1126,7 +1137,7 @@ const POWERUP_META={
 };
 const POWERUP_MULTISHOT_DURATION=12;
 const POWERUP_SPEED_DURATION=10;
-const POWERUP_SCORE2X_DURATION=15;
+const POWERUP_SCORE2X_DURATION=10;
 const POWERUP_SPEED_BOOST=3;
 
 const Q_BASE_COOLDOWN=20;
@@ -1140,10 +1151,10 @@ const Q_DAMAGE=20;
 /* Rayo del boss (desde el boss 5): apunta siguiéndote, se traba y recién
    ahí dispara. La ventana entre el trabado y el disparo es lo que lo hace
    esquivable: hay que salirse de la línea, no correrle de frente. */
-const BEAM_COOLDOWN=7.5;
-const BEAM_CHARGE=1.3;   // sigue al jugador
+const BEAM_COOLDOWN=5.95; // ciclo completo = 8s
+const BEAM_CHARGE=1.2;   // sigue al jugador
 const BEAM_LOCK=0.35;    // congelado, aviso final
-const BEAM_FIRE=0.45;    // dispara
+const BEAM_FIRE=0.5;     // dispara
 const BEAM_HALF_WIDTH=13;
 const BEAM_DAMAGE=1;
 
@@ -1214,36 +1225,36 @@ const SKILL_BRANCHES=[
     ],
     nodes:[
       {id:"dmg1", name:"Impacto Reforzado I", desc:"Tus balas pasan de 1 a 2 de daño.", cost:1, requires:["root"]},
-      {id:"dmg2", name:"Disparo Rápido I", desc:"Cadencia de disparo +10%.", cost:1, requires:["dmg1"]},
-      {id:"dmg3", name:"Balas Perforantes I", desc:"Tus balas atraviesan 1 enemigo extra antes de desaparecer.", cost:1, requires:["dmg1"]},
-      {id:"dmg4", name:"Disparo Rápido II", desc:"Cadencia de disparo +10% adicional.", cost:2, requires:["dmg2"]},
-      {id:"dmg5", name:"Munición Pesada", desc:"15% de probabilidad de causar el doble de daño.", cost:2, requires:["dmg2","dmg3"]},
-      {id:"dmg6", name:"Impacto Reforzado II", desc:"Tus balas pasan de 2 a 3 de daño.", cost:2, requires:["dmg3"]},
-      {id:"dmg7", name:"Ráfaga Ampliada", desc:"El power-up de disparo múltiple pasa de 3 a 5 balas.", cost:3, requires:["dmg4","dmg5"]},
-      {id:"dmg8", name:"Balas Perforantes II", desc:"Tus balas atraviesan 1 enemigo extra más.", cost:3, requires:["dmg5","dmg6"]},
-      {id:"dmg9", name:"Núcleo de Choque", desc:"Desbloquea la habilidad Q: onda expansiva que elimina a todos los enemigos comunes en pantalla.", cost:3, requires:["dmg7","dmg8"], ability:true},
-      {id:"dmg10", name:"Sobrecarga I", desc:"Reduce a 70% el enfriamiento de la onda expansiva.", cost:3, requires:["dmg9"]},
-      {id:"dmg11", name:"Sobrecarga II", desc:"Reduce a 45% el enfriamiento de la onda expansiva.", cost:4, requires:["dmg10"]},
-      {id:"dmg12", name:"Onda Perforante", desc:"La onda expansiva también le hace daño al boss.", cost:4, requires:["dmg9"]},
-      {id:"dmg13", name:"Impacto de Vacío", desc:"El daño de la onda expansiva al boss sube de 20 a 45.", cost:4, requires:["dmg12"]},
-      {id:"dmg14", name:"Núcleo Protector", desc:"Al activar la onda expansiva quedás invulnerable 1 segundo.", cost:4, requires:["dmg9"]},
-      {id:"dmg15", name:"Disparo Rápido III", desc:"Cadencia de disparo +10% adicional.", cost:4, requires:["dmg14"]},
-      {id:"dmg16", name:"Dron Aliado", desc:"Desbloquea la habilidad E: un dron te acompaña y dispara un láser automático a los enemigos cercanos.", cost:5, requires:["dmg15"], ability:true},
-      {id:"dmg17", name:"Batería Ampliada I", desc:"El dron dura 2 segundos más.", cost:5, requires:["dmg16"]},
-      {id:"dmg18", name:"Batería Ampliada II", desc:"El dron dura 2 segundos más, adicional al anterior.", cost:5, requires:["dmg17"]},
-      {id:"dmg19", name:"Láser Potenciado I", desc:"El láser del dron hace +1 de daño.", cost:5, requires:["dmg16"]},
-      {id:"dmg20", name:"Láser Potenciado II", desc:"El láser del dron hace +1 de daño adicional.", cost:5, requires:["dmg19"]},
-      {id:"dmg21", name:"Cadencia Sincronizada", desc:"El dron dispara notablemente más rápido.", cost:6, requires:["dmg16"]},
-      {id:"dmg22", name:"Munición Crítica", desc:"+10% de probabilidad de daño doble.", cost:6, requires:["dmg21"]},
-      {id:"dmg23", name:"Impacto Reforzado III", desc:"Tus balas pasan de 3 a 4 de daño.", cost:6, requires:["dmg21"]},
-      {id:"dmg24", name:"Ráfaga Máxima", desc:"El power-up de disparo múltiple pasa de 5 a 6 balas.", cost:6, requires:["dmg22","dmg23"]},
-      {id:"dmg25", name:"Aniquilación", desc:"Tus balas pasan de 4 a 5 de daño: el máximo posible.", cost:7, requires:["dmg24"]},
-      {id:"dmg26", name:"Radio de Choque I", desc:"El alcance de la onda expansiva sube de 210 a 330.", cost:4, requires:["dmg10"]},
-      {id:"dmg27", name:"Radio de Choque II", desc:"El alcance de la onda expansiva sube de 330 a 450.", cost:5, requires:["dmg26"]},
-      {id:"dmg28", name:"Radio de Choque III", desc:"El alcance de la onda expansiva sube de 450 a 550.", cost:6, requires:["dmg27"]},
-      {id:"dmg29", name:"Detonación I", desc:"La onda expansiva hace +5 de daño.", cost:4, requires:["dmg12"]},
-      {id:"dmg30", name:"Detonación II", desc:"La onda expansiva hace +5 de daño adicional.", cost:5, requires:["dmg29"]},
-      {id:"dmg31", name:"Detonación III", desc:"La onda expansiva hace +5 de daño adicional.", cost:6, requires:["dmg30"]}
+      {id:"dmg2", name:"Disparo Rápido I", desc:"Cadencia de disparo +10%.", cost:2, requires:["dmg1"]},
+      {id:"dmg3", name:"Balas Perforantes I", desc:"Tus balas atraviesan 1 enemigo extra antes de desaparecer.", cost:2, requires:["dmg1"]},
+      {id:"dmg4", name:"Disparo Rápido II", desc:"Cadencia de disparo +10% adicional.", cost:3, requires:["dmg2"]},
+      {id:"dmg5", name:"Munición Pesada", desc:"12% de probabilidad de causar el doble de daño.", cost:3, requires:["dmg2","dmg3"]},
+      {id:"dmg6", name:"Impacto Reforzado II", desc:"Tus balas pasan de 2 a 3 de daño.", cost:3, requires:["dmg3"]},
+      {id:"dmg7", name:"Ráfaga Ampliada", desc:"El power-up de disparo múltiple pasa de 3 a 5 balas.", cost:4, requires:["dmg4","dmg5"]},
+      {id:"dmg8", name:"Balas Perforantes II", desc:"Tus balas atraviesan 1 enemigo extra más.", cost:4, requires:["dmg5","dmg6"]},
+      {id:"dmg9", name:"Núcleo de Choque", desc:"Desbloquea la habilidad Q: onda expansiva que elimina a todos los enemigos comunes en pantalla.", cost:5, requires:["dmg7","dmg8"], ability:true},
+      {id:"dmg10", name:"Sobrecarga I", desc:"Reduce a 70% el enfriamiento de la onda expansiva.", cost:6, requires:["dmg9"]},
+      {id:"dmg11", name:"Sobrecarga II", desc:"Reduce a 50% el enfriamiento de la onda expansiva.", cost:7, requires:["dmg10"]},
+      {id:"dmg12", name:"Onda Perforante", desc:"La onda expansiva también le hace daño al boss.", cost:6, requires:["dmg9"]},
+      {id:"dmg13", name:"Impacto de Vacío", desc:"El daño de la onda expansiva al boss sube de 20 a 45.", cost:7, requires:["dmg12"]},
+      {id:"dmg14", name:"Núcleo Protector", desc:"Al activar la onda expansiva quedás invulnerable 1 segundo.", cost:6, requires:["dmg9"]},
+      {id:"dmg15", name:"Disparo Rápido III", desc:"Cadencia de disparo +10% adicional.", cost:7, requires:["dmg14"]},
+      {id:"dmg16", name:"Dron Aliado", desc:"Desbloquea la habilidad E: un dron te acompaña y dispara un láser automático a los enemigos cercanos.", cost:9, requires:["dmg15"], ability:true},
+      {id:"dmg17", name:"Batería Ampliada I", desc:"El dron dura 2 segundos más.", cost:10, requires:["dmg16"]},
+      {id:"dmg18", name:"Batería Ampliada II", desc:"El dron dura 2 segundos más, adicional al anterior.", cost:11, requires:["dmg17"]},
+      {id:"dmg19", name:"Láser Potenciado I", desc:"El láser del dron hace +1 de daño.", cost:10, requires:["dmg16"]},
+      {id:"dmg20", name:"Láser Potenciado II", desc:"El láser del dron hace +1 de daño adicional.", cost:11, requires:["dmg19"]},
+      {id:"dmg21", name:"Cadencia Sincronizada", desc:"El dron dispara notablemente más rápido.", cost:10, requires:["dmg16"]},
+      {id:"dmg22", name:"Munición Crítica", desc:"+8% de probabilidad de daño doble.", cost:11, requires:["dmg21"]},
+      {id:"dmg23", name:"Impacto Reforzado III", desc:"Tus balas pasan de 3 a 4 de daño.", cost:11, requires:["dmg21"]},
+      {id:"dmg24", name:"Ráfaga Máxima", desc:"El power-up de disparo múltiple pasa de 5 a 6 balas.", cost:12, requires:["dmg22","dmg23"]},
+      {id:"dmg25", name:"Aniquilación", desc:"Tus balas pasan de 4 a 5 de daño: el máximo posible.", cost:12, requires:["dmg24"]},
+      {id:"dmg26", name:"Radio de Choque I", desc:"El alcance de la onda expansiva sube de 210 a 330.", cost:7, requires:["dmg10"]},
+      {id:"dmg27", name:"Radio de Choque II", desc:"El alcance de la onda expansiva sube de 330 a 450.", cost:9, requires:["dmg26"]},
+      {id:"dmg28", name:"Radio de Choque III", desc:"El alcance de la onda expansiva sube de 450 a 550.", cost:10, requires:["dmg27"]},
+      {id:"dmg29", name:"Detonación I", desc:"La onda expansiva hace +5 de daño.", cost:7, requires:["dmg12"]},
+      {id:"dmg30", name:"Detonación II", desc:"La onda expansiva hace +5 de daño adicional.", cost:9, requires:["dmg29"]},
+      {id:"dmg31", name:"Detonación III", desc:"La onda expansiva hace +5 de daño adicional.", cost:10, requires:["dmg30"]}
     ]
   },
   {
@@ -1257,30 +1268,30 @@ const SKILL_BRANCHES=[
     ],
     nodes:[
       {id:"eco1", name:"Recolector I", desc:"+10% de puntos por cada baja.", cost:1, requires:["root"]},
-      {id:"eco2", name:"Cajas Frecuentes I", desc:"Las cajas de power-up caen cada 90 puntos en vez de 100.", cost:1, requires:["eco1"]},
-      {id:"eco3", name:"Núcleos Extra I", desc:"Ganás un punto de mejora cada 90 puntos en vez de 100.", cost:1, requires:["eco1"]},
-      {id:"eco4", name:"Recolector II", desc:"+15% de puntos por baja, adicional al anterior.", cost:2, requires:["eco2"]},
-      {id:"eco5", name:"Doble Cosecha I", desc:"Derrotar al boss te da 5 puntos de mejora extra.", cost:2, requires:["eco2","eco3"]},
-      {id:"eco6", name:"Buffs Duraderos I", desc:"Los power-ups temporales duran 20% más.", cost:2, requires:["eco3"]},
-      {id:"eco7", name:"Cajas Frecuentes II", desc:"Las cajas de power-up caen cada 85 puntos.", cost:3, requires:["eco4","eco5"]},
-      {id:"eco8", name:"Núcleos Extra II", desc:"Ganás un punto de mejora cada 85 puntos.", cost:3, requires:["eco5","eco6"]},
-      {id:"eco9", name:"Interés I", desc:"Empezás cada partida con 40 puntos de regalo.", cost:3, requires:["eco7","eco8"]},
-      {id:"eco10", name:"Recolector III", desc:"+15% de puntos por baja, adicional a los anteriores.", cost:3, requires:["eco9"]},
-      {id:"eco11", name:"Imán de Núcleos", desc:"Las cajas de power-up a menos de 100 de distancia son atraídas hacia vos.", cost:4, requires:["eco9"]},
-      {id:"eco12", name:"Doble Cosecha II", desc:"+5 puntos de mejora por boss, adicional al anterior.", cost:4, requires:["eco9"]},
-      {id:"eco13", name:"Buffs Duraderos II", desc:"Los power-ups temporales duran 20% más, adicional al anterior.", cost:4, requires:["eco10"]},
-      {id:"eco14", name:"Cajas Frecuentes III", desc:"Las cajas de power-up caen cada 80 puntos.", cost:4, requires:["eco10"]},
-      {id:"eco15", name:"Núcleos Extra III", desc:"Ganás un punto de mejora cada 80 puntos.", cost:4, requires:["eco12"]},
-      {id:"eco16", name:"Imán Amplificado", desc:"El alcance del imán de núcleos sube de 100 a 150.", cost:5, requires:["eco12"]},
-      {id:"eco17", name:"Interés II", desc:"+40 puntos de regalo adicionales al empezar la partida.", cost:5, requires:["eco13","eco14"]},
-      {id:"eco18", name:"Recolector IV", desc:"+10% de puntos por baja, adicional a los anteriores.", cost:5, requires:["eco11"]},
-      {id:"eco19", name:"Buffs Duraderos III", desc:"Los power-ups temporales duran 20% más, adicional a los anteriores.", cost:5, requires:["eco15","eco16"]},
-      {id:"eco20", name:"Cajas Frecuentes IV", desc:"Las cajas de power-up caen cada 75 puntos.", cost:5, requires:["eco17"]},
-      {id:"eco21", name:"Núcleos Extra IV", desc:"Ganás un punto de mejora cada 75 puntos.", cost:6, requires:["eco17"]},
-      {id:"eco22", name:"Doble Cosecha III", desc:"+5 puntos de mejora por boss, adicional a los anteriores.", cost:6, requires:["eco19"]},
-      {id:"eco23", name:"Interés III", desc:"+40 puntos de regalo adicionales al empezar la partida.", cost:6, requires:["eco19"]},
-      {id:"eco24", name:"Recolector V", desc:"+10% de puntos por baja, adicional a los anteriores.", cost:6, requires:["eco18","eco21","eco22"]},
-      {id:"eco25", name:"Patrimonio", desc:"+15% de puntos por baja: el bonus máximo de la rama.", cost:7, requires:["eco24"]}
+      {id:"eco2", name:"Cajas Frecuentes I", desc:"Las cajas de power-up caen cada 90 puntos en vez de 100.", cost:2, requires:["eco1"]},
+      {id:"eco3", name:"Núcleos Extra I", desc:"Ganás un punto de mejora cada 90 puntos en vez de 100.", cost:2, requires:["eco1"]},
+      {id:"eco4", name:"Recolector II", desc:"+15% de puntos por baja, adicional al anterior.", cost:3, requires:["eco2"]},
+      {id:"eco5", name:"Doble Cosecha I", desc:"Derrotar al boss te da 5 puntos de mejora extra.", cost:3, requires:["eco2","eco3"]},
+      {id:"eco6", name:"Buffs Duraderos I", desc:"Los power-ups temporales duran 20% más.", cost:3, requires:["eco3"]},
+      {id:"eco7", name:"Cajas Frecuentes II", desc:"Las cajas de power-up caen cada 85 puntos.", cost:4, requires:["eco4","eco5"]},
+      {id:"eco8", name:"Núcleos Extra II", desc:"Ganás un punto de mejora cada 85 puntos.", cost:4, requires:["eco5","eco6"]},
+      {id:"eco9", name:"Interés I", desc:"Empezás cada partida con 40 puntos de regalo.", cost:5, requires:["eco7","eco8"]},
+      {id:"eco10", name:"Recolector III", desc:"+15% de puntos por baja, adicional a los anteriores.", cost:6, requires:["eco9"]},
+      {id:"eco11", name:"Imán de Núcleos", desc:"Las cajas de power-up a menos de 100 de distancia son atraídas hacia vos.", cost:6, requires:["eco9"]},
+      {id:"eco12", name:"Doble Cosecha II", desc:"+5 puntos de mejora por boss, adicional al anterior.", cost:6, requires:["eco9"]},
+      {id:"eco13", name:"Buffs Duraderos II", desc:"Los power-ups temporales duran 20% más, adicional al anterior.", cost:7, requires:["eco10"]},
+      {id:"eco14", name:"Cajas Frecuentes III", desc:"Las cajas de power-up caen cada 80 puntos.", cost:7, requires:["eco10"]},
+      {id:"eco15", name:"Núcleos Extra III", desc:"Ganás un punto de mejora cada 80 puntos.", cost:7, requires:["eco12"]},
+      {id:"eco16", name:"Imán Amplificado", desc:"El alcance del imán de núcleos sube de 100 a 150.", cost:7, requires:["eco12"]},
+      {id:"eco17", name:"Interés II", desc:"+40 puntos de regalo adicionales al empezar la partida.", cost:8, requires:["eco13","eco14"]},
+      {id:"eco18", name:"Recolector IV", desc:"+10% de puntos por baja, adicional a los anteriores.", cost:7, requires:["eco11"]},
+      {id:"eco19", name:"Buffs Duraderos III", desc:"Los power-ups temporales duran 20% más, adicional a los anteriores.", cost:8, requires:["eco15","eco16"]},
+      {id:"eco20", name:"Cajas Frecuentes IV", desc:"Las cajas de power-up caen cada 75 puntos.", cost:9, requires:["eco17"]},
+      {id:"eco21", name:"Núcleos Extra IV", desc:"Ganás un punto de mejora cada 75 puntos.", cost:9, requires:["eco17"]},
+      {id:"eco22", name:"Doble Cosecha III", desc:"+5 puntos de mejora por boss, adicional a los anteriores.", cost:9, requires:["eco19"]},
+      {id:"eco23", name:"Interés III", desc:"+40 puntos de regalo adicionales al empezar la partida.", cost:9, requires:["eco19"]},
+      {id:"eco24", name:"Recolector V", desc:"+10% de puntos por baja, adicional a los anteriores.", cost:9, requires:["eco18","eco21","eco22"]},
+      {id:"eco25", name:"Patrimonio", desc:"+15% de puntos por baja: el bonus máximo de la rama.", cost:9, requires:["eco24"]}
     ]
   },
   {
@@ -1294,30 +1305,30 @@ const SKILL_BRANCHES=[
     ],
     nodes:[
       {id:"res1", name:"Blindaje I", desc:"La invulnerabilidad tras un golpe dura 40% más.", cost:1, requires:["root"]},
-      {id:"res2", name:"Reflejos I", desc:"Velocidad de movimiento base +1.", cost:1, requires:["res1"]},
-      {id:"res3", name:"Escudo Inicial", desc:"Un escudo absorbe gratis el primer golpe de cada partida.", cost:1, requires:["res1"]},
-      {id:"res4", name:"Corazón de Hex I", desc:"+1 vida inicial permanente.", cost:2, requires:["res2"]},
-      {id:"res5", name:"Escudo Reforzado I", desc:"Si el escudo pierde una capa, la recupera tras 40 segundos sin recibir daño.", cost:2, requires:["res2","res3"]},
-      {id:"res6", name:"Blindaje II", desc:"La invulnerabilidad dura 20% más, adicional al anterior.", cost:2, requires:["res3"]},
+      {id:"res2", name:"Reflejos I", desc:"Velocidad de movimiento base +1.", cost:2, requires:["res1"]},
+      {id:"res3", name:"Escudo Inicial", desc:"Un escudo absorbe gratis el primer golpe de cada partida.", cost:2, requires:["res1"]},
+      {id:"res4", name:"Corazón de Hex I", desc:"+1 vida inicial permanente.", cost:3, requires:["res2"]},
+      {id:"res5", name:"Escudo Reforzado I", desc:"Si el escudo pierde una capa, la recupera tras 40 segundos sin recibir daño.", cost:3, requires:["res2","res3"]},
+      {id:"res6", name:"Blindaje II", desc:"La invulnerabilidad dura 20% más, adicional al anterior.", cost:3, requires:["res3"]},
       {id:"res7", name:"Reflejos II", desc:"Velocidad de movimiento +1 adicional.", cost:3, requires:["res4","res5"]},
       {id:"res8", name:"Segunda Oportunidad", desc:"Una vez por partida, sobrevivís a un golpe que te mataría.", cost:3, requires:["res5","res6"]},
-      {id:"res9", name:"Corazón de Hex II", desc:"+1 vida inicial permanente adicional.", cost:3, requires:["res7","res8"]},
-      {id:"res10", name:"Escudo Reforzado II", desc:"El escudo recupera una capa cada 30 segundos en vez de 40.", cost:3, requires:["res9"]},
-      {id:"res11", name:"Blindaje III", desc:"La invulnerabilidad dura 20% más, adicional a los anteriores.", cost:4, requires:["res9"]},
-      {id:"res12", name:"Reflejos III", desc:"Velocidad de movimiento +1 adicional.", cost:4, requires:["res9"]},
-      {id:"res13", name:"Escudo Doble", desc:"El escudo aguanta 2 golpes en vez de 1.", cost:4, requires:["res10"]},
-      {id:"res14", name:"Vitalidad I", desc:"+1 vida inicial permanente adicional.", cost:4, requires:["res10"]},
-      {id:"res15", name:"Inmortal", desc:"Segunda Oportunidad se puede usar 2 veces por partida.", cost:4, requires:["res12"]},
-      {id:"res16", name:"Regeneración I", desc:"Ganás 1 vida cada vez que derrotás a un boss.", cost:5, requires:["res12"]},
-      {id:"res17", name:"Escudo Reforzado III", desc:"El escudo recupera una capa cada 20 segundos en vez de 30.", cost:5, requires:["res13","res14"]},
-      {id:"res18", name:"Blindaje IV", desc:"La invulnerabilidad dura 20% más, adicional a los anteriores.", cost:5, requires:["res11"]},
-      {id:"res19", name:"Reflejos IV", desc:"Velocidad de movimiento +1 adicional.", cost:5, requires:["res15","res16"]},
-      {id:"res20", name:"Corazón de Hex III", desc:"+1 vida inicial permanente adicional.", cost:5, requires:["res17"]},
-      {id:"res21", name:"Escudo Triple", desc:"El escudo aguanta 3 golpes en vez de 2.", cost:6, requires:["res17"]},
-      {id:"res22", name:"Regeneración II", desc:"Ganás 2 vidas por cada boss derrotado en vez de 1.", cost:6, requires:["res19"]},
-      {id:"res23", name:"Vitalidad II", desc:"+1 vida inicial permanente adicional.", cost:6, requires:["res19"]},
-      {id:"res24", name:"Último Bastión", desc:"Segunda Oportunidad se puede usar 3 veces por partida.", cost:6, requires:["res18","res21","res22"]},
-      {id:"res25", name:"Núcleo Inmortal", desc:"+1 vida inicial permanente: el máximo de la rama.", cost:7, requires:["res24"]}
+      {id:"res9", name:"Corazón de Hex II", desc:"+1 vida inicial permanente adicional.", cost:4, requires:["res7","res8"]},
+      {id:"res10", name:"Escudo Reforzado II", desc:"El escudo recupera una capa cada 30 segundos en vez de 40.", cost:5, requires:["res9"]},
+      {id:"res11", name:"Blindaje III", desc:"La invulnerabilidad dura 20% más, adicional a los anteriores.", cost:5, requires:["res9"]},
+      {id:"res12", name:"Reflejos III", desc:"Velocidad de movimiento +1 adicional.", cost:5, requires:["res9"]},
+      {id:"res13", name:"Escudo Doble", desc:"El escudo aguanta 2 golpes en vez de 1.", cost:6, requires:["res10"]},
+      {id:"res14", name:"Vitalidad I", desc:"+1 vida inicial permanente adicional.", cost:6, requires:["res10"]},
+      {id:"res15", name:"Inmortal", desc:"Segunda Oportunidad se puede usar 2 veces por partida.", cost:6, requires:["res12"]},
+      {id:"res16", name:"Regeneración I", desc:"Ganás 1 vida cada vez que derrotás a un boss.", cost:6, requires:["res12"]},
+      {id:"res17", name:"Escudo Reforzado III", desc:"El escudo recupera una capa cada 20 segundos en vez de 30.", cost:7, requires:["res13","res14"]},
+      {id:"res18", name:"Blindaje IV", desc:"La invulnerabilidad dura 20% más, adicional a los anteriores.", cost:6, requires:["res11"]},
+      {id:"res19", name:"Reflejos IV", desc:"Velocidad de movimiento +1 adicional.", cost:7, requires:["res15","res16"]},
+      {id:"res20", name:"Corazón de Hex III", desc:"+1 vida inicial permanente adicional.", cost:7, requires:["res17"]},
+      {id:"res21", name:"Escudo Triple", desc:"El escudo aguanta 3 golpes en vez de 2.", cost:7, requires:["res17"]},
+      {id:"res22", name:"Regeneración II", desc:"Ganás 2 vidas por cada boss derrotado en vez de 1.", cost:7, requires:["res19"]},
+      {id:"res23", name:"Vitalidad II", desc:"+1 vida inicial permanente adicional.", cost:7, requires:["res19"]},
+      {id:"res24", name:"Último Bastión", desc:"Segunda Oportunidad se puede usar 3 veces por partida.", cost:9, requires:["res18","res21","res22"]},
+      {id:"res25", name:"Núcleo Inmortal", desc:"+1 vida inicial permanente: el máximo de la rama.", cost:10, requires:["res24"]}
     ]
   },
   {
@@ -1331,30 +1342,30 @@ const SKILL_BRANCHES=[
     ],
     nodes:[
       {id:"ctrl1", name:"Estasis I", desc:"Los enemigos comunes se mueven 8% más despacio.", cost:1, requires:["root"]},
-      {id:"ctrl2", name:"Interferencia I", desc:"Las balas enemigas viajan 10% más despacio.", cost:1, requires:["ctrl1"]},
-      {id:"ctrl3", name:"Cajas Estables I", desc:"Las cajas de power-up caen 20% más despacio, dándote más tiempo.", cost:1, requires:["ctrl1"]},
+      {id:"ctrl2", name:"Interferencia I", desc:"Las balas enemigas viajan 10% más despacio.", cost:2, requires:["ctrl1"]},
+      {id:"ctrl3", name:"Cajas Estables I", desc:"Las cajas de power-up caen 20% más despacio, dándote más tiempo.", cost:2, requires:["ctrl1"]},
       {id:"ctrl4", name:"Estasis II", desc:"Los enemigos se mueven 12% más despacio, adicional al anterior.", cost:2, requires:["ctrl2"]},
       {id:"ctrl5", name:"Sobrecarga Enemiga I", desc:"Los enemigos disparan 15% más lento.", cost:2, requires:["ctrl2","ctrl3"]},
       {id:"ctrl6", name:"Contención I", desc:"Los enemigos aparecen 12% más espaciados.", cost:2, requires:["ctrl3"]},
       {id:"ctrl7", name:"Interferencia II", desc:"Las balas enemigas viajan 10% más despacio, adicional al anterior.", cost:3, requires:["ctrl4","ctrl5"]},
       {id:"ctrl8", name:"Impacto Ampliado I", desc:"El radio de impacto de tus balas aumenta.", cost:3, requires:["ctrl5","ctrl6"]},
-      {id:"ctrl9", name:"Ancla de Boss I", desc:"El boss se mueve 15% más despacio.", cost:3, requires:["ctrl7","ctrl8"]},
-      {id:"ctrl10", name:"Sobrecarga Enemiga II", desc:"Los enemigos disparan 15% más lento, adicional al anterior.", cost:3, requires:["ctrl9"]},
-      {id:"ctrl11", name:"Contención II", desc:"Los enemigos aparecen 13% más espaciados, adicional al anterior.", cost:4, requires:["ctrl9"]},
-      {id:"ctrl12", name:"Balas Veloces I", desc:"Tus balas viajan 15% más rápido.", cost:4, requires:["ctrl9"]},
-      {id:"ctrl13", name:"Estasis III", desc:"Los enemigos se mueven 10% más despacio, adicional a los anteriores.", cost:4, requires:["ctrl10"]},
-      {id:"ctrl14", name:"Interferencia III", desc:"Las balas enemigas viajan 10% más despacio, adicional a los anteriores.", cost:4, requires:["ctrl10"]},
-      {id:"ctrl15", name:"Cajas Estables II", desc:"Las cajas de power-up caen 15% más despacio, adicional al anterior.", cost:4, requires:["ctrl12"]},
+      {id:"ctrl9", name:"Ancla de Boss I", desc:"El boss se mueve 15% más despacio.", cost:4, requires:["ctrl7","ctrl8"]},
+      {id:"ctrl10", name:"Sobrecarga Enemiga II", desc:"Los enemigos disparan 15% más lento, adicional al anterior.", cost:5, requires:["ctrl9"]},
+      {id:"ctrl11", name:"Contención II", desc:"Los enemigos aparecen 13% más espaciados, adicional al anterior.", cost:5, requires:["ctrl9"]},
+      {id:"ctrl12", name:"Balas Veloces I", desc:"Tus balas viajan 15% más rápido.", cost:5, requires:["ctrl9"]},
+      {id:"ctrl13", name:"Estasis III", desc:"Los enemigos se mueven 10% más despacio, adicional a los anteriores.", cost:5, requires:["ctrl10"]},
+      {id:"ctrl14", name:"Interferencia III", desc:"Las balas enemigas viajan 10% más despacio, adicional a los anteriores.", cost:5, requires:["ctrl10"]},
+      {id:"ctrl15", name:"Cajas Estables II", desc:"Las cajas de power-up caen 15% más despacio, adicional al anterior.", cost:5, requires:["ctrl12"]},
       {id:"ctrl16", name:"Ancla de Boss II", desc:"El boss se mueve 15% más despacio, adicional al anterior.", cost:5, requires:["ctrl12"]},
-      {id:"ctrl17", name:"Impacto Ampliado II", desc:"El radio de impacto de tus balas aumenta de nuevo.", cost:5, requires:["ctrl13","ctrl14"]},
+      {id:"ctrl17", name:"Impacto Ampliado II", desc:"El radio de impacto de tus balas aumenta de nuevo.", cost:6, requires:["ctrl13","ctrl14"]},
       {id:"ctrl18", name:"Balas Veloces II", desc:"Tus balas viajan 15% más rápido, adicional al anterior.", cost:5, requires:["ctrl11"]},
-      {id:"ctrl19", name:"Contención III", desc:"Los enemigos aparecen 15% más espaciados, adicional a los anteriores.", cost:5, requires:["ctrl15","ctrl16"]},
-      {id:"ctrl20", name:"Sobrecarga Enemiga III", desc:"Los enemigos disparan 10% más lento, adicional a los anteriores.", cost:5, requires:["ctrl17"]},
-      {id:"ctrl21", name:"Estasis IV", desc:"Los enemigos se mueven 10% más despacio, adicional a los anteriores.", cost:6, requires:["ctrl17"]},
-      {id:"ctrl22", name:"Interferencia IV", desc:"Las balas enemigas viajan 10% más despacio, adicional a los anteriores.", cost:6, requires:["ctrl19"]},
-      {id:"ctrl23", name:"Ancla de Boss III", desc:"El boss se mueve 10% más despacio, adicional a los anteriores.", cost:6, requires:["ctrl19"]},
-      {id:"ctrl24", name:"Impacto Ampliado III", desc:"El radio de impacto de tus balas aumenta por última vez.", cost:6, requires:["ctrl18","ctrl21","ctrl22"]},
-      {id:"ctrl25", name:"Dominio del Campo", desc:"Los enemigos disparan 10% más lento: el control máximo de la rama.", cost:7, requires:["ctrl24"]}
+      {id:"ctrl19", name:"Contención III", desc:"Los enemigos aparecen 15% más espaciados, adicional a los anteriores.", cost:6, requires:["ctrl15","ctrl16"]},
+      {id:"ctrl20", name:"Sobrecarga Enemiga III", desc:"Los enemigos disparan 10% más lento, adicional a los anteriores.", cost:8, requires:["ctrl17"]},
+      {id:"ctrl21", name:"Estasis IV", desc:"Los enemigos se mueven 10% más despacio, adicional a los anteriores.", cost:7, requires:["ctrl17"]},
+      {id:"ctrl22", name:"Interferencia IV", desc:"Las balas enemigas viajan 10% más despacio, adicional a los anteriores.", cost:7, requires:["ctrl19"]},
+      {id:"ctrl23", name:"Ancla de Boss III", desc:"El boss se mueve 10% más despacio, adicional a los anteriores.", cost:7, requires:["ctrl19"]},
+      {id:"ctrl24", name:"Impacto Ampliado III", desc:"El radio de impacto de tus balas aumenta por última vez.", cost:9, requires:["ctrl18","ctrl21","ctrl22"]},
+      {id:"ctrl25", name:"Dominio del Campo", desc:"Los enemigos disparan 10% más lento: el control máximo de la rama.", cost:9, requires:["ctrl24"]}
     ]
   }
 ];
@@ -1407,13 +1418,13 @@ function computeDerived(set){
     +(has("dmg1")?1:0)+(has("dmg6")?1:0)+(has("dmg23")?1:0)+(has("dmg25")?1:0); // máx 5
   d.shootCDMult=1-((has("dmg2")?0.10:0)+(has("dmg4")?0.10:0)+(has("dmg15")?0.10:0));
   d.bulletPierce=(has("dmg3")?1:0)+(has("dmg8")?1:0);
-  d.critChance=(has("dmg5")?0.15:0)+(has("dmg22")?0.10:0);
+  d.critChance=(has("dmg5")?0.12:0)+(has("dmg22")?0.08:0);
   d.multishotCount= has("dmg24")?6 : has("dmg7")?5 : 3;
 
   d.qAbilityUnlocked=has("dmg9");
   let qCdMult=1;
   if(has("dmg10")) qCdMult=0.7;
-  if(has("dmg11")) qCdMult=0.45;
+  if(has("dmg11")) qCdMult=0.5;
   d.qCooldownMult=qCdMult;
   d.qHitsBoss=has("dmg12");
   d.qBossDamage=has("dmg13")?45:20;
@@ -3353,7 +3364,7 @@ function spawnBoss(){
         x:c.width/2+sl.dx, y:boss.targetY+sl.dy,
         size:22, hp:gLife, maxHp:gLife,
         cd:Math.random()*1, fireCD:1,
-        vShot:bossNumber>=10
+        vShot:bossNumber>=5
       });
     });
   }
