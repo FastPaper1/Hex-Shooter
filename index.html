@@ -32,7 +32,7 @@ body{
 input,textarea{
   -webkit-user-select:text; -moz-user-select:text; -ms-user-select:text; user-select:text;
 }
-canvas{display:block;background:var(--bg-void);cursor:crosshair;}
+canvas{display:block;background:var(--bg-void);cursor:crosshair;touch-action:none;}
 
 .hidden{display:none !important;}
 
@@ -748,6 +748,53 @@ input[type=range]:focus-visible{outline:2px solid #fff;outline-offset:3px;}
 body.potato .diff-card.locked .diff-body{filter:none;opacity:.25;}
 body.potato .diff-card{transition:none;}
 
+/* ---------- botones de habilidad en pantallas táctiles ---------- */
+#touchAbilities{
+  position:fixed;
+  right:16px;bottom:22px;
+  display:flex;flex-direction:column;gap:12px;
+  z-index:25;
+}
+.touch-ab{
+  width:62px;height:62px;
+  border-radius:50%;
+  border:2px solid var(--neon-cyan);
+  background:rgba(10,2,26,0.75);
+  color:var(--neon-cyan);
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:21px;
+  cursor:pointer;
+  box-shadow:0 0 14px rgba(0,246,255,0.3);
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.touch-ab:active{transform:scale(0.92);background:rgba(0,246,255,0.2);}
+.touch-ab.cooling{
+  border-color:rgba(140,130,180,0.5);
+  color:#a99fc4;
+  box-shadow:none;
+  opacity:.6;
+}
+
+/* ---------- bienvenida / registro ---------- */
+.welcome-box{border-color:rgba(0,246,255,0.55);box-shadow:0 0 40px rgba(0,246,255,0.2),0 16px 50px rgba(0,0,0,0.75);}
+.welcome-box input{
+  width:100%;
+  background:rgba(10,2,26,0.9);
+  border:1px solid rgba(0,246,255,0.45);
+  border-radius:9px;
+  padding:11px 14px;
+  color:#fff;
+  font-family:'Share Tech Mono',monospace;
+  font-size:15px;
+  text-align:center;
+  outline:none;
+  margin-bottom:6px;
+}
+.welcome-box input:focus{border-color:var(--neon-cyan);box-shadow:0 0 14px rgba(0,246,255,0.3);}
+.welcome-box .btn-row{margin-top:12px;}
+
 /* ---------- confirmación de salida ---------- */
 .neon-btn.danger{
   border-color:var(--neon-red);
@@ -822,6 +869,80 @@ body.potato #newRecordTag{animation:none;opacity:1;}
 body.potato .skill-card{animation:none;}
 body.potato .neon-btn:hover{transform:none;}
 
+
+/* ============================================================
+   PANTALLAS CHICAS
+   El HUD, el récord y los buffs son 3 elementos fijos arriba: en
+   celular se pisaban entre ellos. Acá se achican y se reacomodan.
+   ============================================================ */
+@media (max-width:760px){
+  #hud{
+    top:8px;
+    padding:5px 6px;
+    font-size:12px;
+    border-radius:11px;
+    max-width:calc(100vw - 20px);
+  }
+  #hud .hud-item{padding:2px 8px;gap:4px;}
+  #hud .hud-icon{font-size:11px;}
+
+  /* el récord pasa abajo del HUD para no chocar con los botones de audio */
+  #recordBadge{
+    top:auto;bottom:10px;left:10px;
+    font-size:10.5px;
+    padding:5px 10px;
+  }
+
+  #audioMini{top:8px;right:8px;gap:6px;}
+  #audioMini button{width:32px;height:32px;font-size:13px;}
+
+  #buffs{top:44px;gap:5px;max-width:96vw;}
+  .buff-chip{font-size:10px;padding:3px 9px 3px 4px;gap:5px;}
+  .buff-chip .chip-badge{width:16px;height:16px;font-size:9px;}
+
+  #bossBar{top:80px;width:min(88vw,420px);}
+  #bossBarLabel{font-size:9px;}
+  #bossBarTrack{height:10px;}
+
+  .touch-ab{width:56px;height:56px;font-size:19px;}
+  #touchAbilities{right:12px;bottom:16px;gap:10px;}
+
+  /* menús: todo un poco más compacto y en columna cuando hace falta */
+  .screen{gap:12px;padding:16px 12px;}
+  .neon-btn{padding:11px 22px;font-size:14px;}
+  .menu-secondary .neon-btn{padding:9px 18px;font-size:12px;}
+  .title{font-size:clamp(26px,9vw,44px);}
+  .hint{font-size:12px;}
+  .record-line{font-size:13px;}
+
+  .diff-grid{grid-template-columns:1fr;gap:12px;width:92vw;}
+  .diff-card{padding:14px 14px 12px;}
+  .diff-tag{min-height:0;margin-bottom:10px;}
+  .diff-hero-num{font-size:28px;}
+
+  .lb-list{width:94vw;min-height:220px;}
+  .lb-row{font-size:13px;padding:8px 10px;gap:8px;}
+  .lb-nameRow{gap:8px;}
+  .lb-nameRow input{width:150px;}
+
+  .skill-card{width:94vw;bottom:12px;padding:16px 16px 14px;}
+  .skill-card-title{font-size:17px;}
+  .preview-values{font-size:17px;}
+
+  .death-title{font-size:clamp(30px,11vw,52px);}
+  .death-stats{font-size:16px;}
+}
+
+/* pantallas muy chicas o en horizontal con poca altura */
+@media (max-height:520px){
+  #recordBadge{display:none;}
+  #buffs{top:40px;}
+  #bossBar{top:72px;}
+  .screen{gap:8px;}
+  .title{font-size:clamp(22px,7vw,34px);}
+  .hint{display:none;}
+}
+
 @media (prefers-reduced-motion: reduce){
   #bossMsg,#newRecordTag{animation:none;opacity:1;}
   .neon-btn,#audioMini button{transition:none;}
@@ -842,6 +963,11 @@ body.potato .neon-btn:hover{transform:none;}
 </div>
 
 <div id="buffs" class="hidden"></div>
+
+<div id="touchAbilities" class="hidden">
+  <button id="touchQ" class="touch-ab">Q</button>
+  <button id="touchE" class="touch-ab">E</button>
+</div>
 
 <div id="bossBar" class="hidden">
   <div id="bossBarLabel"><span id="bossBarName">BOSS</span><span id="bossShieldTag" class="hidden">⬢ ESCUDO ACTIVO</span></div>
@@ -927,6 +1053,19 @@ body.potato .neon-btn:hover{transform:none;}
   <button id="diffBackBtn" class="neon-btn">VOLVER</button>
 </div>
 
+<div id="welcomeOverlay" class="confirm-overlay hidden">
+  <div class="confirm-box welcome-box">
+    <div class="confirm-icon" style="color:var(--neon-cyan);text-shadow:0 0 16px var(--neon-cyan);">⬡</div>
+    <h3 class="confirm-title">Elegí tu nombre</h3>
+    <p class="confirm-text">Necesitás un nombre para jugar.<br>Es con el que vas a aparecer en el ranking global,<br>y después solo lo vas a poder cambiar cada 7 días.</p>
+    <input id="welcomeName" type="text" maxlength="16" placeholder="Entre 3 y 16 caracteres" autocomplete="off">
+    <div id="welcomeMsg" class="lb-nameMsg"></div>
+    <div class="btn-row">
+      <button id="welcomeSave" class="neon-btn pink">EMPEZAR</button>
+    </div>
+  </div>
+</div>
+
 <div id="quitConfirm" class="confirm-overlay hidden">
   <div class="confirm-box">
     <div class="confirm-icon">⏻</div>
@@ -937,13 +1076,6 @@ body.potato .neon-btn:hover{transform:none;}
       <button id="quitConfirmBtn" class="neon-btn danger">SÍ, SALIR</button>
     </div>
   </div>
-</div>
-
-<div id="byeScreen" class="screen hidden">
-  <h1 class="title" style="font-size:clamp(26px,5vw,44px);">¡GRACIAS POR JUGAR!</h1>
-  <div class="record-line">🏆 Tu récord: <span id="byeRecord">0</span></div>
-  <p class="hint">Ya podés cerrar esta pestaña.<br>Tu progreso quedó guardado para la próxima.</p>
-  <button id="byeBackBtn" class="neon-btn">VOLVER AL MENÚ</button>
 </div>
 
 <div id="deathScreen" class="screen hidden">
@@ -1617,9 +1749,45 @@ addEventListener("keydown",e=>{
 addEventListener("keyup",e=>keys[e.key]=false);
 
 // click izquierdo también dispara
-c.addEventListener("pointerdown",e=>{ if(e.button===0) mouseShootHeld=true; });
-addEventListener("pointerup",e=>{ if(e.button===0) mouseShootHeld=false; });
+c.addEventListener("pointerdown",e=>{ if(e.button===0 && e.pointerType!=="touch") mouseShootHeld=true; });
+addEventListener("pointerup",e=>{ if(e.button===0 && e.pointerType!=="touch") mouseShootHeld=false; });
 c.addEventListener("contextmenu",e=>e.preventDefault());
+
+/* ---------- control táctil ----------
+   Arrastrás con el dedo y la nave sigue el movimiento (relativo, no salta
+   al punto tocado, para que el dedo no tape la nave). Mientras tocás,
+   dispara sola: en pantalla no hay lugar para un botón de disparo cómodo. */
+const isTouch = ("ontouchstart" in window) || (navigator.maxTouchPoints>0);
+let touchId=null, touchLastX=0, touchLastY=0;
+
+c.addEventListener("touchstart",e=>{
+  if(gameState!=="playing" || settingsOpen) return;
+  e.preventDefault();
+  const t=e.changedTouches[0];
+  touchId=t.identifier; touchLastX=t.clientX; touchLastY=t.clientY;
+  mouseShootHeld=true;
+},{passive:false});
+
+c.addEventListener("touchmove",e=>{
+  if(touchId===null) return;
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    if(t.identifier!==touchId) continue;
+    if(stunTimer<=0){
+      player.x+=(t.clientX-touchLastX);
+      player.y+=(t.clientY-touchLastY);
+    }
+    touchLastX=t.clientX; touchLastY=t.clientY;
+  }
+},{passive:false});
+
+function endTouch(e){
+  for(const t of e.changedTouches){
+    if(t.identifier===touchId){ touchId=null; mouseShootHeld=false; }
+  }
+}
+c.addEventListener("touchend",endTouch,{passive:true});
+c.addEventListener("touchcancel",endTouch,{passive:true});
 
 /* ================= AUDIO: motor base ================= */
 const ctxAudio=new (window.AudioContext||window.webkitAudioContext)();
@@ -2163,8 +2331,6 @@ document.getElementById("closeSkillTreeBtn").onclick=()=>{
   sfxUiBlip(520);
   skillTreeScreen.classList.add("hidden");
   skillNodeCard.classList.add("hidden");
-  difficultyScreen.classList.add("hidden");
-  rankingScreen.classList.add("hidden");
   selectedSkillId=null;
   menuScreen.classList.remove("hidden");
 };
@@ -2183,7 +2349,10 @@ function setScreen(state){
   recordBadge.classList.toggle("hidden", state!=="playing");
   skillTreeScreen.classList.add("hidden");
   skillNodeCard.classList.add("hidden");
+  difficultyScreen.classList.add("hidden");
+  rankingScreen.classList.add("hidden");
   if(state!=="playing"){
+    touchAbilities.classList.add("hidden");
     settingsOpen=false; settingsPanel.classList.add("hidden");
     document.getElementById("pauseMenuBtn").classList.add("hidden");
     buffsEl.classList.add("hidden");
@@ -2282,9 +2451,91 @@ function returnToMenu(){
   refreshCurrencyDisplays();
 }
 
-document.getElementById("playBtn").onclick=()=>{ sfxUiBlip(880); startGame(); };
-document.getElementById("retryBtn").onclick=()=>{ sfxUiBlip(880); startGame(); };
+document.getElementById("playBtn").onclick=()=>{ if(!requireName()) return; sfxUiBlip(880); startGame(); };
+document.getElementById("retryBtn").onclick=()=>{ if(!requireName()) return; sfxUiBlip(880); startGame(); };
 document.getElementById("menuBtn").onclick=()=>{ sfxUiBlip(520); returnToMenu(); };
+
+/* ================= HABILIDADES TÁCTILES ================= */
+const touchAbilities=document.getElementById("touchAbilities");
+const touchQBtn=document.getElementById("touchQ");
+const touchEBtn=document.getElementById("touchE");
+
+function bindTouchAbility(btn,fn){
+  btn.addEventListener("touchstart",e=>{ e.preventDefault(); e.stopPropagation(); fn(); },{passive:false});
+  btn.addEventListener("click",e=>{ e.preventDefault(); e.stopPropagation(); if(!isTouch) fn(); });
+}
+bindTouchAbility(touchQBtn,()=>triggerShockwave());
+bindTouchAbility(touchEBtn,()=>triggerDrone());
+
+function refreshTouchAbilities(){
+  if(!isTouch || gameState!=="playing"){
+    touchAbilities.classList.add("hidden");
+    return;
+  }
+  const q=derived.qAbilityUnlocked, e=derived.droneUnlocked;
+  touchAbilities.classList.toggle("hidden", !q && !e);
+  touchQBtn.classList.toggle("hidden", !q);
+  touchEBtn.classList.toggle("hidden", !e);
+  touchQBtn.classList.toggle("cooling", qCooldown>0);
+  touchEBtn.classList.toggle("cooling", droneCooldown>0 || droneTimer>0);
+}
+
+/* ================= BIENVENIDA / REGISTRO ================= */
+const welcomeOverlay=document.getElementById("welcomeOverlay");
+const WELCOME_KEY="hexShooterDefinitivo_bienvenida";
+let welcomeShown=false;
+
+/* Se muestra una sola vez, al entrar sin nombre. Sin esto la primera partida
+   de un jugador nuevo se perdía: no se podía enviar al ranking. */
+function maybeShowWelcome(){
+  if(welcomeShown || playerName || !LB_ENABLED()) return;
+  if(gameState==="playing") return; // no interrumpir una partida en curso
+  welcomeShown=true;
+  document.getElementById("welcomeName").value="";
+  document.getElementById("welcomeMsg").className="lb-nameMsg";
+  document.getElementById("welcomeMsg").textContent="";
+  welcomeOverlay.classList.remove("hidden");
+  setTimeout(()=>{ try{ document.getElementById("welcomeName").focus(); }catch(e){} },80);
+}
+
+function closeWelcome(){
+  welcomeOverlay.classList.add("hidden");
+  StorageHelper.set(WELCOME_KEY,true);
+}
+
+/* El registro es obligatorio: sin nombre no se puede jugar, así ninguna
+   partida se pierde por no estar registrado. */
+function requireName(){
+  if(playerName || !LB_ENABLED()) return true;
+  welcomeShown=false;
+  maybeShowWelcome();
+  return false;
+}
+
+async function welcomeRegister(){
+  const el=document.getElementById("welcomeName");
+  const msg=document.getElementById("welcomeMsg");
+  const v=el.value.trim().slice(0,16);
+  if(v.length<3){ msg.className="lb-nameMsg bad"; msg.textContent="Necesita al menos 3 caracteres"; sfxUiBlip(220); return; }
+  msg.className="lb-nameMsg"; msg.textContent="Registrando...";
+  const r=await saveName(v);
+  if(!r){ msg.className="lb-nameMsg bad"; msg.textContent="No se pudo conectar. Probá de nuevo."; return; }
+  if(r.ok){
+    playerName=v;
+    StorageHelper.set(NAME_KEY,v);
+    sfxUiBlip(880);
+    closeWelcome();
+  }else if(r.motivo==="tomado"){
+    msg.className="lb-nameMsg bad"; msg.textContent="Ese nombre ya está en uso"; sfxUiBlip(220);
+  }else{
+    msg.className="lb-nameMsg bad"; msg.textContent="El nombre debe tener entre 3 y 16 caracteres"; sfxUiBlip(220);
+  }
+}
+
+document.getElementById("welcomeSave").onclick=welcomeRegister;
+document.getElementById("welcomeName").addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ e.preventDefault(); welcomeRegister(); }
+});
 
 /* ================= RANKING ONLINE (UI) ================= */
 const rankingScreen=document.getElementById("rankingScreen");
@@ -2494,7 +2745,6 @@ document.getElementById("diffCards").addEventListener("click",e=>{
    pestaña normal el navegador lo bloquea sin avisar. Por eso intentamos
    cerrar y, si seguimos vivos, mostramos una pantalla de despedida. */
 const quitConfirm=document.getElementById("quitConfirm");
-const byeScreen=document.getElementById("byeScreen");
 
 function openQuitConfirm(){
   sfxUiBlip(430);
@@ -2506,27 +2756,29 @@ function closeQuitConfirm(){
 }
 function doQuit(){
   quitConfirm.classList.add("hidden");
-  // cortamos el audio para que no siga sonando en la pantalla de despedida
-  try{ musicGain.gain.value=0; }catch(e){}
+  // cortar todo el audio antes de irse
+  try{ musicGain.gain.value=0; sfxGain.gain.value=0; }catch(e){}
+  try{ ctxAudio.close(); }catch(e){}
+
+  /* Los navegadores sólo dejan que una pestaña se cierre a sí misma si fue
+     abierta por script. Probamos los tres métodos que existen y, si el
+     navegador los bloquea, dejamos la pestaña en blanco: es lo más parecido
+     a "cerrado" que se puede lograr desde una página web. */
+  try{ window.open("","_self"); }catch(e){}
   try{ window.close(); }catch(e){}
+  try{ window.top.close(); }catch(e){}
+
   setTimeout(()=>{
     if(!document.hidden){
-      document.getElementById("byeRecord").textContent=bestScore;
-      menuScreen.classList.add("hidden");
-      byeScreen.classList.remove("hidden");
+      try{ location.replace("about:blank"); }
+      catch(e){ document.documentElement.innerHTML=""; document.body.style.background="#000"; }
     }
-  },180);
+  },150);
 }
 
 document.getElementById("quitBtn").onclick=openQuitConfirm;
 document.getElementById("quitCancelBtn").onclick=closeQuitConfirm;
 document.getElementById("quitConfirmBtn").onclick=doQuit;
-document.getElementById("byeBackBtn").onclick=()=>{
-  byeScreen.classList.add("hidden");
-  menuScreen.classList.remove("hidden");
-  try{ musicGain.gain.value=parseFloat(musicVolEl.value)||0.6; }catch(e){}
-  sfxUiBlip(760);
-};
 // clic fuera del cuadro o Escape = cancelar
 quitConfirm.addEventListener("click",e=>{ if(e.target===quitConfirm) closeQuitConfirm(); });
 
@@ -2854,6 +3106,8 @@ function drawBackground(){
 function drawPowerups(){
   powerups.forEach(p=>{
     const meta=POWERUP_META[p.type];
+    // el multishot muestra cuántas balas va a dar de verdad según el árbol
+    const icono=(p.type==="multishot") ? ("x"+derived.multishotCount) : meta.icon;
     const r=p.size;
     ctx.save();
     if(!potatoMode){ ctx.shadowColor=meta.color; ctx.shadowBlur=14; }
@@ -2871,7 +3125,7 @@ function drawPowerups(){
     ctx.font="bold 13px 'Share Tech Mono',monospace";
     ctx.textAlign="center";
     ctx.textBaseline="middle";
-    ctx.fillText(meta.icon,p.x,p.y+1);
+    ctx.fillText(icono,p.x,p.y+1);
     ctx.restore();
   });
 }
@@ -3127,6 +3381,7 @@ function buffChip(badge,label,cls,fillFrac){
 }
 
 function updateHUD(){
+  refreshTouchAbilities();
   // el récord sube en vivo apenas lo superás (se guarda al terminar)
   if(score>bestScore){
     bestScore=score;
@@ -3154,7 +3409,7 @@ function updateHUD(){
 
   const chips=[];
   if(multishotTimer>0)
-    chips.push(buffChip("✳","<span class='chip-time'>"+multishotTimer.toFixed(1)+"s</span>","",multishotTimer/(POWERUP_MULTISHOT_DURATION*derived.buffDurationMult)));
+    chips.push(buffChip("x"+derived.multishotCount,"<span class='chip-time'>"+multishotTimer.toFixed(1)+"s</span>","",multishotTimer/(POWERUP_MULTISHOT_DURATION*derived.buffDurationMult)));
   if(speedBoostTimer>0)
     chips.push(buffChip("⚡","<span class='chip-time'>"+speedBoostTimer.toFixed(1)+"s</span>","",speedBoostTimer/(POWERUP_SPEED_DURATION*derived.buffDurationMult)));
   if(score2xTimer>0)
@@ -4045,6 +4300,10 @@ StorageHelper.get(META_KEY,null).then(v=>{
 StorageHelper.get(POTATO_KEY,false).then(v=>{ applyPotatoMode(!!v); });
 StorageHelper.get(NAME_KEY,"").then(v=>{ playerName=v||""; });
 StorageHelper.get(PID_KEY,"").then(v=>{ if(v) playerId=v; });
+StorageHelper.get(NAME_KEY,"").then(n=>{
+  playerName=n||"";
+  if(!playerName) setTimeout(maybeShowWelcome,600);
+});
 </script>
 </body>
 </html>
