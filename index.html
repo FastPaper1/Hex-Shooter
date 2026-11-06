@@ -90,6 +90,20 @@ canvas{display:block;background:var(--bg-void);cursor:crosshair;touch-action:non
 @keyframes recordPulse{50%{box-shadow:0 0 30px rgba(87,255,161,0.6);}}
 body.potato #recordBadge.is-beating{animation:none;box-shadow:none;}
 
+/* casi récord: estás al 90% del récord que perseguís pero todavía no lo pasaste */
+#recordBadge.is-near{
+  border-color:var(--neon-pink);
+  color:#ffd0ee;
+  text-shadow:0 0 10px var(--neon-pink);
+  box-shadow:0 0 20px rgba(255,47,176,0.35);
+  animation:recordNear 0.8s ease-in-out infinite;
+}
+@keyframes recordNear{50%{box-shadow:0 0 30px rgba(255,47,176,0.65);}}
+body.potato #recordBadge.is-near{animation:none;box-shadow:none;}
+/* cuenta atras: solo aparece en el estado CASI!, asi la placa normal no crece */
+#recordGap{display:none;font-weight:400;letter-spacing:0;opacity:.9;}
+#recordBadge.is-near #recordGap{display:inline;}
+
 #buffs{
   position:fixed;top:62px;left:50%;transform:translateX(-50%);
   display:flex;gap:7px;flex-wrap:wrap;justify-content:center;
@@ -137,6 +151,9 @@ body.potato #recordBadge.is-beating{animation:none;box-shadow:none;}
 .buff-chip.is-ready .chip-badge{background:rgba(87,255,161,0.18);}
 .buff-chip.is-cooling{border-color:rgba(140,130,180,0.45);color:#a99fc4;box-shadow:none;}
 .buff-chip.is-cooling .chip-badge{background:rgba(140,130,180,0.14);}
+/* seguro de racha: rosa, el mismo color que el anillo alrededor de la nave */
+.buff-chip.is-guard{border-color:rgba(255,47,176,0.6);color:#ffb9e6;box-shadow:0 0 14px rgba(255,47,176,0.2);}
+.buff-chip.is-guard .chip-badge{background:rgba(255,47,176,0.18);}
 
 #bossBar{
   position:fixed;top:104px;left:50%;transform:translateX(-50%);
@@ -171,6 +188,21 @@ body.potato #recordBadge.is-beating{animation:none;box-shadow:none;}
 #bossBarTrack.shielded #bossBarFill{
   background:linear-gradient(90deg,#2c6f8f,#4aa8c9);
   box-shadow:0 0 10px rgba(0,246,255,0.5);
+}
+/* fase de furia: cuando al boss le queda <=30% se vuelve rojo y late */
+#bossBarTrack.enraged{
+  border-color:var(--neon-red);
+  box-shadow:0 0 18px rgba(255,45,85,0.7), inset 0 0 8px rgba(0,0,0,0.6);
+  animation:enrageBar .5s ease-in-out infinite;
+}
+#bossBarTrack.enraged #bossBarFill{
+  background:linear-gradient(90deg,var(--neon-red),var(--neon-yellow));
+  box-shadow:0 0 12px var(--neon-red);
+}
+@keyframes enrageBar{50%{box-shadow:0 0 26px rgba(255,45,85,0.95), inset 0 0 8px rgba(0,0,0,0.6);}}
+#bossMsg.furia{
+  color:var(--neon-yellow);
+  text-shadow:0 0 10px var(--neon-yellow),0 0 30px var(--neon-red),0 0 60px var(--neon-red);
 }
 
 /* ---------- audio mini (siempre alcanzable, por encima de todo) ---------- */
@@ -313,6 +345,118 @@ input[type=range]:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   margin:2px 0 10px;
 }
 .death-stats strong{color:var(--neon-cyan);text-shadow:0 0 8px var(--neon-cyan);}
+/* marca de agua de la marca personal: va al lado del numero de la partida,
+   chiquita y apagada, para que se lea "esto es contra vos mismo" sin
+   competirle al dato de la partida. En verde cuando la partida la superó. */
+.stat-best{
+  font-family:'Share Tech Mono',monospace;
+  font-size:12.5px;
+  color:#6f6690;
+  letter-spacing:0.5px;
+}
+.stat-best.is-new{
+  color:var(--neon-yellow);
+  text-shadow:0 0 8px var(--neon-yellow);
+  animation:statBestPop .5s ease-out;
+}
+@keyframes statBestPop{
+  0%{transform:scale(0.6);opacity:0;}
+  60%{transform:scale(1.18);opacity:1;}
+  100%{transform:scale(1);opacity:1;}
+}
+
+/* ---------- rango al morir (nota arcade: puntería + racha + bosses + aguante) ---------- */
+#deathRank{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  margin:8px 0 2px;
+}
+.rank-letter{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:clamp(56px,15vw,110px);
+  line-height:.85;
+  color:var(--neon-cyan);
+  text-shadow:0 0 18px currentColor,0 0 52px currentColor;
+  animation:rankPop .5s cubic-bezier(.2,1.7,.4,1);
+}
+.rank-flavor{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:1.5px;
+  color:#c8bfe0;
+  text-shadow:none;
+}
+@keyframes rankPop{
+  0%{transform:scale(0);opacity:0;}
+  70%{transform:scale(1.18);opacity:1;}
+  100%{transform:scale(1);opacity:1;}
+}
+/* desglose: de dónde salieron los puntos del rango y cuánto falta para el de arriba */
+.rank-break{
+  display:flex;flex-direction:column;gap:5px;
+  width:min(340px,86vw);
+  margin:9px 0 1px;
+}
+.rb-row{
+  display:grid;
+  grid-template-columns:126px 1fr 50px;
+  align-items:center;
+  gap:9px;
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:10.5px;
+  letter-spacing:1.2px;
+}
+.rb-name{color:#8a7fb5;text-align:left;white-space:nowrap;}
+/* objetivo de la pata: qué tenés que hacer para llenar esa barra */
+.rb-goal{
+  font-style:normal;
+  font-size:8px;
+  letter-spacing:0.6px;
+  color:#5f5780;
+  margin-left:5px;
+}
+.rb-num{color:#c8bfe0;text-align:right;}
+.rb-bar{
+  height:7px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:4px;
+  overflow:hidden;
+}
+.rb-bar i{
+  display:block;height:100%;width:0;
+  background:currentColor;
+  box-shadow:0 0 8px currentColor;
+  border-radius:4px;
+  transition:width .55s cubic-bezier(.25,1,.4,1);
+}
+.rb-total{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:11px;
+  letter-spacing:1.3px;
+  color:#9c92bd;
+  margin-top:2px;
+  padding-top:6px;
+  border-top:1px solid rgba(255,255,255,0.12);
+}
+.rb-total b{color:var(--neon-cyan);}
+.rank-best{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:11.5px;
+  letter-spacing:1.5px;
+  color:#8a7fb5;
+  margin-top:3px;
+}
+.menu-rank{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  margin-left:10px;
+}
+.diff-best-rank{font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px;}
 
 .btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
 
@@ -472,6 +616,24 @@ input[type=range]:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   font-size:15px;
   text-shadow:0 0 8px rgba(255,233,77,0.7);
 }
+/* fila de lo que PAGÁS en un nodo de contrapartida: misma caja, en rojo */
+.skill-preview.is-bad{
+  background:linear-gradient(90deg,rgba(255,45,85,0.10),rgba(255,45,85,0.03));
+  border:1px solid rgba(255,45,85,0.24);
+  border-left:3px solid var(--neon-red);
+  margin-top:7px;
+}
+.skill-preview.is-bad .preview-label{color:#c48195;}
+.skill-preview.is-bad .preview-after{
+  color:var(--neon-red);
+  text-shadow:0 0 10px rgba(255,45,85,0.6);
+}
+.skill-preview.is-bad .preview-arrow{
+  color:var(--neon-red);
+  text-shadow:0 0 8px rgba(255,45,85,0.7);
+}
+body.potato .skill-preview.is-bad .preview-after,
+body.potato .skill-preview.is-bad .preview-arrow{text-shadow:none;}
 
 /* ---------- ranking online ---------- */
 .lb-notice{
@@ -706,6 +868,13 @@ input[type=range]:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   font-size:12px;color:#8a7fb5;
 }
 .diff-best b{font-family:'Orbitron',sans-serif;color:#e8e0ff;font-size:13px;}
+/* marcas personales de habilidad, debajo del récord de puntaje */
+.diff-pb{
+  margin-top:5px;
+  display:flex;gap:14px;flex-wrap:wrap;
+  font-size:11.5px;color:#8a7fb5;
+}
+.diff-pb b{font-family:'Orbitron',sans-serif;color:var(--neon-cyan);font-size:12.5px;}
 
 .diff-card.selected{border-color:#fff;box-shadow:0 0 24px rgba(255,255,255,0.2);}
 .diff-card.selected .diff-name::after{content:" ✓";}
@@ -866,6 +1035,10 @@ body.potato #hud .hud-item{text-shadow:none;}
 body.potato .screen{background:rgba(4,0,10,0.95);}
 body.potato #bossMsg,
 body.potato #newRecordTag{animation:none;opacity:1;}
+body.potato #bossBarTrack.enraged{animation:none;}
+body.potato .rank-letter{animation:none;text-shadow:none;}
+body.potato .rb-bar i{transition:none;box-shadow:none;}
+body.potato .stat-best.is-new{animation:none;text-shadow:none;}
 body.potato .skill-card{animation:none;}
 body.potato .neon-btn:hover{transform:none;}
 
@@ -954,7 +1127,7 @@ body.potato .neon-btn:hover{transform:none;}
 
 <canvas id="c"></canvas>
 
-<div id="recordBadge" class="hidden">🏆 RÉCORD <span id="recordVal">0</span></div>
+<div id="recordBadge" class="hidden">🏆 <span id="recordTag">RÉCORD</span> <span id="recordVal">0</span> <span id="recordGap"></span></div>
 
 <div id="hud" class="hidden">
   <span class="hud-item hud-score"><span class="hud-icon">⭐</span><span id="scoreVal">0</span></span>
@@ -984,7 +1157,7 @@ body.potato .neon-btn:hover{transform:none;}
 
 <div id="menuScreen" class="screen">
   <h1 class="title">HEX SHOOTER<span>DEFINITIVO</span></h1>
-  <div class="record-line">🏆 RÉCORD: <span id="menuRecord">0</span></div>
+  <div class="record-line">🏆 RÉCORD: <span id="menuRecord">0</span><span id="menuBestRank" class="menu-rank hidden"></span></div>
   <div class="record-line" style="color:var(--neon-cyan);text-shadow:0 0 10px var(--neon-cyan);">⬡ <span id="menuCurrency">0</span> puntos de mejora</div>
   <div class="record-line" id="menuDiffLine">Dificultad: <span id="menuDiffName">FÁCIL</span></div>
   <div class="btn-row menu-main">
@@ -1078,13 +1251,34 @@ body.potato .neon-btn:hover{transform:none;}
   </div>
 </div>
 
+<div id="byeScreen" class="screen hidden">
+  <h1 class="title" style="font-size:clamp(26px,5vw,44px);">¡GRACIAS POR JUGAR!</h1>
+  <div class="record-line">🏆 Tu récord: <span id="byeRecord">0</span></div>
+  <p class="hint">Ya podés cerrar esta pestaña.<br>Tu progreso quedó guardado para la próxima.</p>
+  <button id="byeBackBtn" class="neon-btn">VOLVER AL MENÚ</button>
+</div>
+
 <div id="deathScreen" class="screen hidden">
   <h1 id="finalTitle" class="death-title">PERDISTE</h1>
   <div id="newRecordTag" class="hidden">¡NUEVO RÉCORD!</div>
+  <div id="deathRank" class="hidden">
+    <div class="rank-letter" id="rankLetter">S</div>
+    <div class="rank-flavor" id="rankFlavor"></div>
+    <div class="rank-break" id="rankBreak">
+      <div class="rb-row"><span class="rb-name">PUNTERÍA<em class="rb-goal" id="rbAccGoal"></em></span><span class="rb-bar"><i id="rbAccFill"></i></span><span class="rb-num" id="rbAccNum">0/40</span></div>
+      <div class="rb-row"><span class="rb-name">RACHA<em class="rb-goal" id="rbComboGoal"></em></span><span class="rb-bar"><i id="rbComboFill"></i></span><span class="rb-num" id="rbComboNum">0/30</span></div>
+      <div class="rb-row"><span class="rb-name">BOSSES<em class="rb-goal" id="rbBossGoal"></em></span><span class="rb-bar"><i id="rbBossFill"></i></span><span class="rb-num" id="rbBossNum">0/20</span></div>
+      <div class="rb-row"><span class="rb-name">AGUANTE<em class="rb-goal" id="rbTimeGoal"></em></span><span class="rb-bar"><i id="rbTimeFill"></i></span><span class="rb-num" id="rbTimeNum">0/10</span></div>
+      <div class="rb-total" id="rbTotal"></div>
+    </div>
+    <div class="rank-best" id="rankBest"></div>
+  </div>
   <div class="death-stats">
     <p style="margin:0;">Puntaje: <strong id="finalScore">0</strong></p>
     <p style="margin:0;">Tiempo de juego: <strong id="finalTime">0:00</strong></p>
     <p style="margin:0;">Enemigos eliminados: <strong id="finalKills">0</strong></p>
+    <p style="margin:0;">Precisión: <strong id="finalAccuracy">0%</strong> <span class="stat-best" id="accBestTag"></span></p>
+    <p style="margin:0;">Mejor racha: <strong id="finalCombo">—</strong> <span class="stat-best" id="comboBestTag"></span></p>
     <p style="margin:0;">Récord: <strong id="finalRecord">0</strong></p>
     <p style="margin:0;">⬡ Mejoras ganadas: <strong id="finalMeta">0</strong></p>
   </div>
@@ -1222,15 +1416,42 @@ let gameState="menu"; // 'menu' | 'playing' | 'dead'
 let settingsOpen=false;
 
 let keys={}, mouseShootHeld=false;
-let bullets=[], enemies=[], enemyBullets=[], particles=[], powerups=[];
+let bullets=[], enemies=[], enemyBullets=[], particles=[], powerups=[], mines=[], mineBlasts=[];
 let score=0, lives=3, time=0, shootCD=0, invul=0, enemiesKilled=0;
+// stats de la corrida para el resumen de muerte (precisión + mejor racha)
+let shotsFired=0, shotsHit=0, bestComboKills=0;
 let boss=null, bossActive=false, bossCD=0, guardians=[], shards=[];
 let bossesDefeated=0;
 let nextBossTime=60; // el tiempo nunca se reinicia; esto marca el próximo umbral
 let enemySpawnTimer=1;
 let nextPowerupScore=100;
 let multishotTimer=0, speedBoostTimer=0, score2xTimer=0;
-let bestScore=0, recordAtRunStart=0, beatingRecord=false;
+// tiempo lento: mientras corre, el "mundo enemigo" (enemigos, boss, minas,
+// spawns) avanza 1 frame de cada 2; el jugador sigue a full.
+// fxSlow es esa MISMA camara lenta pero continua (0.5 en vez de saltear frames).
+// La usan las cosas rapidas que se mueven en linea recta y se miran de cerca:
+// balas enemigas, particulas, ondas de estallido y el anillo de la Q. Saltearles
+// un frame de cada dos no se lee como camara lenta, se lee como tironeo.
+// Vale 1 mientras no hay slowmo, asi que multiplicar por ella siempre es seguro.
+let slowmoTimer=0, slowAccum=0, fxSlow=1;
+// racha: matar en cadena sin recibir dano sube un multiplicador de puntaje
+let comboKills=0, comboTimer=0, comboPulse=0;
+// escudo de racha (powerup "guard"): mientras dura, un golpe real sigue
+// costando una vida pero NO corta la racha. Cuenta en tiempo real, como
+// multishotTimer/speedBoostTimer: es un buff del JUGADOR, no del mundo.
+let comboGuardTimer=0;
+// 1 -> 0 en GUARD_FLASH_TIME: destello del anillo cuando lo agarras y cuando
+// aguanta un golpe. Es el unico feedback de que el seguro ACTUO.
+let comboGuardFlash=0;
+const GUARD_FLASH_TIME=0.5;
+let bestScore=0, recordAtRunStart=0, beatingRecord=false, nearRecord=false;
+let lastRecordGap=-1;      // ultimo "faltan N" escrito, para no tocar el DOM cada frame
+let recordFX=0;            // festejo de record roto (1 -> 0), anclado a la pantalla
+const RECORD_FX_TIME=1.4;  // cuanto dura el destello, en segundos
+let bossDeathFX=0;         // freeze+zoom al morir el boss (1 -> 0), ver triggerBossDeathFreeze
+let bossDeathX=0, bossDeathY=0, bossDeathSize=0, bossDeathRot=0;
+let bossDeathColor="#ffffff";
+const BOSS_DEATH_FX_TIME=0.5; // cuanto dura el freeze, en segundos
 
 // progresión persistente (meta)
 let metaCurrency=0;
@@ -1243,12 +1464,47 @@ let shieldRechargeTimer=0;
 let secondChanceUsesLeft=0;
 let qCooldown=0;
 let shockwaveFX=0;
+let mineGrace=0; // ventana breve tras la onda Q: la detonacion del campo minado no lastima al jugador
+// contador de cadena: junta las minas que estallan seguidas y las premia como una sola jugada
+let mineChainN=0, mineChainT=0, mineChainX=0, mineChainY=0;
+let floatTexts=[]; // carteles flotantes reusables {x,y,main,mainColor,sub,subColor,t}
+// presentacion de enemigos especiales: que tipos ya se presentaron en ESTA
+// partida, y la ficha que se esta mostrando ahora (una sola a la vez)
+let introSeen=new Set();
+let enemyIntro=null; // {ref,x,y,t,name,tip,col}
+// feedback de impacto: temblor de camara, hitstop y flash rojo al recibir dano
+let shakeMag=0, shakeT=0, shakeT0=1, hitStopT=0, hurtFlash=0;
+const MAX_SHAKE=18; // tope de desplazamiento en px (el fondo se dibuja con margen)
+// aberracion cromatica: pulso corto (0..1) al recibir un golpe fuerte o al entrar en furia
+let chromAb=0;
+// destello de borde con el color de lo ultimo que mataste, SOLO durante una cadena (racha>=2)
+let edgeFlashT=0, edgeFlashColor="#ffffff";
+let fxCanvas=null, fxCtx=null, fx2Canvas=null, fx2Ctx=null; // buffers reusables, se crean al primer uso
 let droneTimer=0, droneCooldown=0, droneFireTimer=0, droneTarget=null;
 let droneBeamTimer=0, droneBeamFrom=null, droneBeamTo=null;
+// segundo blanco del dron (nodo dmg35 "Doble Objetivo"): mismo patron que el
+// primero, en variables aparte para no pisar el rayo/mira principal
+let droneTarget2=null, droneBeamTimer2=0, droneBeamFrom2=null, droneBeamTo2=null;
 const DRONE_BASE_DURATION=2;
 const DRONE_COOLDOWN=20;
 const DRONE_BASE_DAMAGE=2;
 const DRONE_BASE_FIRE_INTERVAL=0.45;
+
+/* A QUIEN LE DISPARA EL DRON.
+   El dron es la habilidad mas cara de la rama de DAÑO y lo unico que hacia era
+   apuntarle a lo que casualmente estaba MAS CERCA del jugador. Con 2 segundos
+   de bateria y 20 de recarga eso significa quemar las cuatro balas que tiene en
+   la primera cria de 1 de vida que le pasa por delante, mientras el ladron se
+   va por el borde de arriba con 300 puntos tuyos encima.
+   Estos numeros son "cercania regalada": cuantos pixeles de mas esta dispuesto
+   a cruzar el dron con tal de pegarle a ESE blanco. Se restan de la distancia
+   real, asi el desempate entre dos blancos del mismo tipo sigue siendo el mas
+   cerca, sin listas por prioridad ni una segunda pasada. */
+const DRONE_PRI_THIEF=100000; // ladron cargado: absoluto, es lo unico que se lleva algo tuyo
+const DRONE_PRI_SEEDER=170;   // cada segundo que vive deja otra mina en el piso
+const DRONE_PRI_BLOCKER=130;  // el laser le entra por el escudo; tus balas no
+const DRONE_PEN_TRIVIAL=120;  // 1 de vida: lo reventas de un tiro, no gastes bateria
+const DRONE_PEN_TANK=200;     // kamikaze: aguanta 50, el dron entero le saca 8
 
 /* Hitboxes: son círculos (no hexágonos), medidos como la "apotema" de
    cada polígono, o sea el radio del círculo más grande que entra
@@ -1258,19 +1514,38 @@ const ENEMY_HIT_SCALE=Math.cos(Math.PI/6);
 const BULLET_HIT_RADIUS=5;
 
 /* Power-ups */
-const POWERUP_TYPES=["refresh","multishot","speed","score2x"];
+const POWERUP_TYPES=["refresh","multishot","speed","score2x","slowmo","guard"];
 // pesos de aparición del sorteo de cajas
-const POWERUP_WEIGHTS={refresh:1, multishot:3, speed:3, score2x:3}; // 10% / 30% / 30% / 30%
+const POWERUP_WEIGHTS={refresh:1, multishot:3, speed:3, score2x:3, slowmo:3, guard:2}; // ~6.7% vida, ~20% los de 3, ~13.3% guard
 const POWERUP_META={
   refresh:{icon:"↻",color:"#57ffa1"},
   multishot:{icon:"x3",color:"#00f6ff"},
   speed:{icon:"⚡",color:"#ffe94d"},
-  score2x:{icon:"x2",color:"#b967ff"}
+  score2x:{icon:"x2",color:"#b967ff"},
+  slowmo:{icon:"◐",color:"#00f6ff"},
+  guard:{icon:"◈",color:"#ff2fb0"} // igual a --neon-pink; libre entre los powerups
 };
 const POWERUP_MULTISHOT_DURATION=12;
 const POWERUP_SPEED_DURATION=10;
 const POWERUP_SCORE2X_DURATION=10;
 const POWERUP_SPEED_BOOST=3;
+const POWERUP_SLOWMO_DURATION=5;
+// escudo de racha: mientras dura, un golpe real NO resetea comboKills/comboTimer
+// (la vida se sigue perdiendo igual). No es armadura, es un seguro para la racha.
+const POWERUP_GUARD_DURATION=6;
+// fracción a la que corre el mundo con el tiempo lento activo. Se usa de dos
+// formas: como compuerta de frames para la lógica pesada (1 de cada 2) y como
+// multiplicador continuo (fxSlow) para lo que tiene que verse suave.
+const SLOWMO_WORLD_RATE=0.5;
+
+/* Racha de puntaje. Cada kill encadenado sube el contador; cada 5 kills suman
+   +0.5x al puntaje, con tope en +3x (o sea x4 total a los 30 kills). La cadena
+   se corta si pasan COMBO_WINDOW segundos sin matar, o si te pegan de verdad
+   (romper el escudo NO la corta: para eso esta el escudo). */
+const COMBO_WINDOW=2.5;
+const COMBO_MAX_BONUS=3;
+function comboBonus(){ return Math.min(COMBO_MAX_BONUS, Math.floor(comboKills/5)*0.5); }
+function comboMult(){ return 1+comboBonus(); }
 
 const Q_BASE_COOLDOWN=20;
 /* La onda ya no borra la pantalla: tiene radio propio y hace daño, así que
@@ -1289,6 +1564,55 @@ const BEAM_LOCK=0.35;    // congelado, aviso final
 const BEAM_FIRE=0.5;     // dispara
 const BEAM_HALF_WIDTH=13;
 const BEAM_DAMAGE=1;
+/* BARRIDO: en furia (fase 2), el rayo ya no dispara clavado en un punto, gira
+   mientras dispara. El aviso ("locked") ya decia DONDE arrancaba pero nunca
+   hacia donde iba a barrer, asi que el jugador se salia de la linea y se
+   quedaba tranquilo — un dodge de un paso contra un ataque que decia ser el
+   climax de la pelea. Ahora hay que seguir corriendo para no dejar que te
+   alcance. Dura mas que el disparo clavado (0.9s contra 0.5s) porque cubre
+   mas angulo y tiene que sentirse continuo, no un latigazo. */
+const BEAM_SWEEP_ARC=1.3;  // rad que recorre en total (~74°)
+const BEAM_SWEEP_FIRE=0.9; // dura mas que BEAM_FIRE: es barrido, no latigazo
+/* Aviso mas largo que el del rayo clavado (0.6s contra 0.35s). No es generosidad
+   gratuita: el cono recien aparece cuando el angulo se traba, y medido frame a
+   frame el jugador parado a la distancia mas larga tenia 0.18s de margen para
+   arrancar a correr — menos que el tiempo de reaccion de una persona, o sea un
+   golpe disfrazado de esquive. Con 0.6s el margen sube a ~0.43s: se esquiva
+   reaccionando, que es de lo que se trata. */
+const BEAM_SWEEP_LOCK=0.6;
+/* Cuanto ARRANCA el barrido por detras del angulo trabado. Sin esto el rayo
+   nacia justo encima del jugador y se iba para el otro lado, o sea que quedarse
+   quieto era la respuesta correcta y el ataque no pedia nada. Naciendo un poco
+   pasado, RASTRILLA por encima de donde estabas: hay que moverse si o si — y el
+   cono entero se dibuja durante el aviso, asi que la informacion esta toda
+   antes del primer frame de daño.
+   Va en PIXELES PERPENDICULARES al rayo, no en radianes, y esa es la parte que
+   importa: en radianes el mismo offset se traduce en muchisimos mas pixeles
+   cuando el jugador esta lejos del eje del boss (rincones), y ahi la fuga
+   pasaba a ser imposible. Medido en px es siempre la misma distancia de fuga,
+   caiga donde caiga: 40 de arranque + 34 de medio ancho de rayo = ~74px, contra
+   los ~126px que el jugador recorre en los 0.35s de aviso. Se esquiva
+   reaccionando, nunca de arranque, y nunca es un golpe regalado. */
+const BEAM_SWEEP_BACK_PX=40;
+
+/* Cañones del boss: cada línea del abanico sale de un cañón propio montado en
+   arco sobre el borde de abajo, y los cañones se pueden volar de a uno. Aguantan
+   poco, pero se comen la bala en vez del cuerpo: apuntarles es desarmarlo, tirar
+   por el hueco entre medio es lo que le baja la vida. Cada cañón muerto es una
+   línea menos de fuego (el boss compensa acortando la cadencia), y si le volás
+   todos deja de abanicar y escupe anillos lentos desde el núcleo: no queda
+   inofensivo, queda distinto. Mientras los guardianes lo blindan los cañones
+   tampoco reciben daño, igual que el cuerpo: primero hay que bajar el escudo. */
+const CANNON_R=9;             // radio de impacto de cada cañón
+const CANNON_SPREAD=1.32;     // apertura total del arco de cañones, en radianes
+const CANNON_LEN=15;          // largo del caño que sobresale del cuerpo
+const CANNON_MOUNT=0.86;      // a qué fracción del radio del boss se monta la base
+const CANNON_CD_MULT=0.86;    // cada cañón muerto acorta la cadencia de los que quedan
+const CANNON_CD_FLOOR=0.16;   // ...pero nunca por debajo de esto
+const CANNON_SCORE=20;
+const CORE_RING=5;            // sin cañones, el núcleo escupe este anillo
+const CORE_RING_CD=1.1;       // ...y mucho más espaciado que el abanico
+function cannonHp(tier){ return Math.max(4,Math.round(7+tier*2.5)); }
 
 const DIFF_MAX_LEVEL=7;
 // vida/tamaño de los enemigos comunes según el nivel (0..7)
@@ -1297,13 +1621,19 @@ const DIFF_ENEMY_TIER=[0,1,1,2,2,3,3,4];
 /* Dificultades. Todos los multiplicadores son relativos a FÁCIL, que es el
    juego base. "timeToMax" es cuánto tarda en llegar al nivel 7. */
 const DIFFICULTIES=[
-  {key:"facil",  name:"FÁCIL", tagline:"El juego base",   color:"#39d98a", timeToMax:900, scoreMult:1.0, enemyHpMult:1.0, enemySpeedMult:1.0, bulletSpeedMult:1.0, unlockScore:0,     unlockFrom:null},
-  {key:"normal", name:"NORMAL", tagline:"Sube más rápido, paga mejor",  color:"#ffd23f", timeToMax:720, scoreMult:1.5, enemyHpMult:1.2, enemySpeedMult:1.3, bulletSpeedMult:1.2, unlockScore:10000, unlockFrom:"facil"},
-  {key:"dificil",name:"DIFÍCIL", tagline:"Enemigos duros y veloces", color:"#ff2d55", timeToMax:480, scoreMult:2.0, enemyHpMult:1.5, enemySpeedMult:1.5, bulletSpeedMult:1.5, unlockScore:25000, unlockFrom:"normal"},
-  {key:"experto",name:"EXPERTO", tagline:"Solo para veteranos", color:"#b967ff", timeToMax:300, scoreMult:2.5, enemyHpMult:2.0, enemySpeedMult:2.0, bulletSpeedMult:2.0, unlockScore:50000, unlockFrom:"dificil"}
+  {key:"facil",  name:"FÁCIL", tagline:"El juego base",   color:"#39d98a", timeToMax:900, scoreMult:1.0, enemyHpMult:1.0, enemySpeedMult:1.0, bulletSpeedMult:1.0, unlockScore:0,     unlockFrom:null,   rankTimeCap:360},
+  {key:"normal", name:"NORMAL", tagline:"Sube más rápido, paga mejor",  color:"#ffd23f", timeToMax:720, scoreMult:1.5, enemyHpMult:1.2, enemySpeedMult:1.3, bulletSpeedMult:1.2, unlockScore:10000, unlockFrom:"facil", rankTimeCap:300},
+  {key:"dificil",name:"DIFÍCIL", tagline:"Enemigos duros y veloces", color:"#ff2d55", timeToMax:480, scoreMult:2.0, enemyHpMult:1.5, enemySpeedMult:1.5, bulletSpeedMult:1.5, unlockScore:25000, unlockFrom:"normal", rankTimeCap:240},
+  {key:"experto",name:"EXPERTO", tagline:"Solo para veteranos", color:"#b967ff", timeToMax:300, scoreMult:2.5, enemyHpMult:2.0, enemySpeedMult:2.0, bulletSpeedMult:2.0, unlockScore:50000, unlockFrom:"dificil", rankTimeCap:180}
 ];
 let currentDifficulty=0;
 let bestByDifficulty={facil:0,normal:0,dificil:0,experto:0};
+/* mejor rango histórico (S/A/B/C/D) por dificultad; "" = todavía sin rango */
+let bestRankByDifficulty={facil:"",normal:"",dificil:"",experto:""};
+/* mejor punteria (%) y mejor racha (kills) historicos por dificultad, cada
+   uno independiente del score o del rango: podes tener tu mejor punteria en
+   una partida que ni siquiera ganaste. */
+let bestStatsByDifficulty={facil:{acc:0,combo:0},normal:{acc:0,combo:0},dificil:{acc:0,combo:0},experto:{acc:0,combo:0}};
 
 function diff(){ return DIFFICULTIES[currentDifficulty]; }
 function diffByKey(k){ return DIFFICULTIES.find(d=>d.key===k); }
@@ -1323,6 +1653,115 @@ const KAMIKAZE_HP=50;
 const KAMIKAZE_DAMAGE=5;
 const KAMIKAZE_ORBIT_RADIUS=110;
 const KAMIKAZE_COLOR="#a6ff2e";
+
+/* divisor: al morir se parte en dos crias chicas y rapidas que se abren
+   hacia los lados. Las crias tienen 1 de vida y no se vuelven a partir. */
+const SPLITTER_HP=3;
+const SPLITTER_COLOR="#9b3dff"; // igual a --neon-purple
+
+/* sembrador: baja lento zigzagueando y NO dispara. Cada tanto suelta una mina
+   quieta que se arma sola y explota si el jugador se le acerca. Le podes reventar
+   las minas de un tiro antes de que exploten.
+
+   PANICO: si la onda Q le barre el campo minado, el sembrador reacciona en vez
+   de seguir bajando como si nada. Se raja para el costado contrario al jugador
+   SOLTANDO TODO DE GOLPE (un racimo apretado de minas) y despues queda AGOTADO:
+   unos segundos lento, sin sembrar y con el nucleo apagado. O sea que la Q ya no
+   es "limpiar la pantalla y listo": te devuelve un racimo nuevo arriba (futura
+   cadena gorda) y, a cambio, te regala la ventana para matarlo. */
+const SEEDER_HP=4;
+const SEEDER_COLOR="#ffe94d"; // igual a --neon-yellow
+const SEEDER_PANIC_TIME=2.2;   // cuanto dura la huida despues de ver volar su campo
+const SEEDER_PANIC_DROPS=3;    // minas que suelta de golpe mientras se raja
+const SEEDER_PANIC_CD=0.3;     // cada cuanto suelta una en panico (vs ~2s normal)
+const SEEDER_PANIC_SIDE=2.6;   // cuanto acelera de costado, en px por frame
+const SEEDER_PANIC_DIVE=0.35;  // mientras huye casi no baja: se mueve en horizontal
+const SEEDER_SPENT_TIME=3;     // agotado: sin sembrar y a media maquina = ventana de kill
+const SEEDER_SPENT_SPEED=0.55; // multiplicador de velocidad mientras esta agotado
+const MINE_ARM_TIME=0.6;      // segundos inerte antes de armarse
+const MINE_TRIGGER_R=44;      // el jugador entra en este radio y arranca la mecha
+const MINE_FUSE=0.4;          // mecha corta: te da un respiro para salir corriendo
+const MINE_BLAST_R=66;        // radio del estallido al detonar
+const MINE_LIFETIME=11;       // se apaga sola si nadie la piso
+const MINE_MAX=14;            // tope de minas en pantalla
+const MINE_BLAST_DMG=3;       // el estallido tambien lastima a los enemigos que agarra
+const MINE_CHAIN_R=82;        // una mina que estalla enciende la mecha de las vecinas
+const MINE_CHAIN_FUSE=0.09;   // la cadena es casi instantanea: se lee como un solo golpe
+const MINE_CHAIN_MAX=6;       // tope para el pitch/temblor, la cadena puede ser mas larga
+const Q_MINE_SWEEP=0.5;       // la onda Q detona las minas segun distancia: barrido de adentro hacia afuera
+const MINE_CHAIN_WINDOW=0.35; // sin estallidos nuevos por este tiempo, la cadena se cierra y se cobra
+const MINE_CHAIN_MIN=3;       // menos de 3 minas no es una cadena, es mala suerte
+const MINE_CHAIN_SCORE=12;    // bonus = MINE_CHAIN_SCORE * n * (n-2), con n topeado en 10
+
+/* bloqueador: el primer enemigo que ataca tu POSICION en vez de tu vida. Baja
+   lento con un escudo frontal que se come tus balas y, de paso, tapa a todo lo
+   que tenga atras. El escudo apunta hacia vos, pero gira DESPACIO: si te quedas
+   tirando de frente no le hacer ni un rasguño, y si te movés de costado le
+   ganás el angulo y le queda el flanco al descubierto. Cuanto mas cerca esta,
+   mas facil es rodearlo (te movés mas rapido en angulo), asi que premia ir
+   para adelante. La onda Q, el dron y las minas lo ignoran: esas son las otras
+   tres salidas. Y dispara por donde mira, o sea que el escudo es a la vez la
+   amenaza y el cartel de "por aca no". */
+const BLOCKER_HP=4;
+const BLOCKER_COLOR="#ff2fb0"; // igual a --neon-pink
+const BLOCKER_ARC=1.0;         // media apertura del escudo en radianes (~57°, 114° de tapa)
+const BLOCKER_SHIELD_R=15;     // cuanto sobresale el escudo por fuera del cuerpo
+const BLOCKER_TURN=0.013;      // rad por frame: el techo de giro es lo que lo hace flanqueable
+const BLOCKER_FIRE_CD=2;       // tira poco y lento: la amenaza es el bloqueo, no el daño
+const BLOCKER_BULLET_SPEED=3.4;
+const BLOCKER_SCORE=25;        // paga mas que un comun porque cuesta posicionarse
+
+/* enjambre: grupo de 5 que cae en formacion de cuña tejiendo un serpenteo
+   sincronizado (misma fase para todos, cada uno con su offset fijo). Uno
+   solo no es nada: 1hp fijo, no escala con la dificultad, porque la amenaza
+   no es aguantar sino el numero y el tejido — hay que elegir por donde
+   colarse en vez de plantarse a tirar de frente. */
+const SWARM_COLOR="#00f6ff"; // igual a --neon-cyan
+const SWARM_SIZE=11;
+const SWARM_SCORE=6;         // paga menos que un comun: son 5 muertes faciles, no una dificil
+const SWARM_WEAVE_AMP=64;
+const SWARM_WEAVE_FREQ=2.1;
+const SWARM_FORMATION=[{x:0,y:0},{x:-22,y:16},{x:22,y:16},{x:-44,y:32},{x:44,y:32}];
+
+/* ladron: el primer enemigo que NO ataca tus vidas sino tu PUNTAJE. Baja
+   derecho y rapido, no dispara, y al tocarte no te saca ni una vida: te muerde
+   el marcador, se da vuelta y se raja por arriba con el botin encima. Mientras
+   lo lleva se enciende amarillo (el color del puntaje en el HUD) y muestra
+   cuanto tiene: matarlo antes de que se vaya te devuelve TODO lo robado pasado
+   por el multiplicador de racha, o sea que cazarlo paga mas de lo que te saco.
+   Si sale por arriba, esos puntos no vuelven mas.
+   Dos decisiones a proposito: aguanta poquisimo (la amenaza es la fuga, no la
+   vida) y solo aparece si hay algo que robar. */
+const THIEF_HP=2;
+const THIEF_COLOR="#ffe94d";  // igual a --neon-yellow: el color del puntaje en el HUD
+const THIEF_DIM="#5a5326";    // el mismo amarillo apagado, mientras va con las manos vacias
+const THIEF_MIN_SCORE=150;    // sin marcador no hay robo: antes de eso no spawnea
+const THIEF_STEAL_PCT=0.10;   // se lleva el 10% de lo que tengas...
+const THIEF_STEAL_MIN=40;     // ...con un piso, para que el mordisco se note temprano
+const THIEF_SCORE=15;         // lo que paga matarlo vacio, aparte del botin
+const THIEF_DIVE=4.6;         // baja mas rapido que cualquier otro comun
+const THIEF_FLEE=5.2;         // y se va todavia mas rapido: hay que cazarlo, no esperarlo
+const THIEF_WEAVE=1.9;        // serpentea al huir para que no sea un tiro fijo
+const THIEF_TRACK=1.2;        // px por frame de correccion horizontal mientras baja
+
+/* Presentacion de los enemigos especiales. Cada uno se agrego en una corrida
+   distinta y el juego nunca los presento: el jugador ve que sus balas se
+   evaporan contra el bloqueador, o que un bicho amarillo va dejando bolitas,
+   y no tiene forma de saber que hacer salvo morir hasta deducirlo. La primera
+   vez que un tipo aparece EN LA PARTIDA, una ficha se engancha al que acaba de
+   entrar y dice como se llama y por donde se resuelve. Una sola vez por tipo y
+   por partida (no se persiste: si volves despues de una semana te lo vuelve a
+   contar). El texto tiene que entrar en pantalla angosta: maximo ~30 caracteres. */
+const ENEMY_INTRO={
+  blocker :{name:"BLOQUEADOR", tip:"tapa tus balas: rodealo",     col:BLOCKER_COLOR},
+  seeder  :{name:"SEMBRADOR",  tip:"siembra minas: reventalas",   col:SEEDER_COLOR},
+  splitter:{name:"DIVISOR",    tip:"al morir se parte en dos",    col:SPLITTER_COLOR},
+  swarm   :{name:"ENJAMBRE",   tip:"vienen 5: colate entre medio",col:SWARM_COLOR},
+  thief   :{name:"LADRÓN",     tip:"te roba puntos: cazalo",      col:THIEF_COLOR},
+  kamikaze:{name:"KAMIKAZE",   tip:"te persigue: saca 5 vidas",   col:KAMIKAZE_COLOR}
+};
+const ENEMY_INTRO_TIME=3.4;    // segundos que dura la ficha, contados desde que se ve
+const ENEMY_INTRO_ENTER_Y=54;  // hasta que el bicho no baja hasta acá, la ficha espera
 
 const player={x:0,y:0,size:25,speed:6};
 
@@ -1353,7 +1792,10 @@ const SKILL_BRANCHES=[
       {x:1400,y:540},{x:1200,y:420},{x:1040,y:420},{x:1600,y:420},{x:1760,y:420},
       {x:1400,y:420},{x:1250,y:300},{x:1550,y:300},{x:1400,y:180},{x:1400,y:60},
       {x:1200,y:660},{x:1200,y:540},
-      {x:1040,y:600},{x:1600,y:660},{x:1600,y:540},{x:1760,y:600}
+      {x:1040,y:600},{x:1600,y:660},{x:1600,y:540},{x:1760,y:600},
+      {x:1960,y:780},{x:1960,y:600},
+      {x:1800,y:1120},
+      {x:1950,y:340}
     ],
     nodes:[
       {id:"dmg1", name:"Impacto Reforzado I", desc:"Tus balas pasan de 1 a 2 de daño.", cost:1, requires:["root"]},
@@ -1380,13 +1822,17 @@ const SKILL_BRANCHES=[
       {id:"dmg22", name:"Munición Crítica", desc:"+8% de probabilidad de daño doble.", cost:11, requires:["dmg21"]},
       {id:"dmg23", name:"Impacto Reforzado III", desc:"Tus balas pasan de 3 a 4 de daño.", cost:11, requires:["dmg21"]},
       {id:"dmg24", name:"Ráfaga Máxima", desc:"El power-up de disparo múltiple pasa de 5 a 6 balas.", cost:12, requires:["dmg22","dmg23"]},
-      {id:"dmg25", name:"Aniquilación", desc:"Tus balas pasan de 4 a 5 de daño: el máximo posible.", cost:12, requires:["dmg24"]},
+      {id:"dmg25", name:"Aniquilación", desc:"Tus balas pasan de 4 a 5 de daño: el tope de la rama.", cost:12, requires:["dmg24"]},
       {id:"dmg26", name:"Radio de Choque I", desc:"El alcance de la onda expansiva sube de 210 a 330.", cost:7, requires:["dmg10"]},
       {id:"dmg27", name:"Radio de Choque II", desc:"El alcance de la onda expansiva sube de 330 a 450.", cost:9, requires:["dmg26"]},
       {id:"dmg28", name:"Radio de Choque III", desc:"El alcance de la onda expansiva sube de 450 a 550.", cost:10, requires:["dmg27"]},
       {id:"dmg29", name:"Detonación I", desc:"La onda expansiva hace +5 de daño.", cost:7, requires:["dmg12"]},
       {id:"dmg30", name:"Detonación II", desc:"La onda expansiva hace +5 de daño adicional.", cost:9, requires:["dmg29"]},
-      {id:"dmg31", name:"Detonación III", desc:"La onda expansiva hace +5 de daño adicional.", cost:10, requires:["dmg30"]}
+      {id:"dmg31", name:"Detonación III", desc:"La onda expansiva hace +5 de daño adicional.", cost:10, requires:["dmg30"]},
+      {id:"dmg32", name:"Detonador de Campo", desc:"Las minas hacen +2 de daño al detonar y su radio de estallido sube de 66 a 76.", cost:6, requires:["dmg9"]},
+      {id:"dmg33", name:"Cadena Detonante", desc:"Las minas hacen +1 de daño extra (total +3) y su reacción en cadena llega 25 más lejos.", cost:9, requires:["dmg32","dmg31"]},
+      {id:"dmg34", name:"Sobrecarga Vital", desc:"Tus balas hacen +1 de daño, pero arrancás cada partida con 1 vida menos. Pegás más fuerte y aguantás menos: vos decidís.", cost:5, requires:["dmg6"], tradeoff:true},
+      {id:"dmg35", name:"Doble Objetivo", desc:"El dron elige un SEGUNDO blanco distinto en cada ráfaga y le dispara al mismo tiempo que al primero.", cost:13, requires:["dmg20","dmg21"]}
     ]
   },
   {
@@ -1396,7 +1842,8 @@ const SKILL_BRANCHES=[
       {x:1700,y:1600},{x:1800,y:1300},{x:1800,y:1500},{x:1900,y:1400},{x:2000,y:1200},
       {x:2000,y:1400},{x:2000,y:1600},{x:2100,y:1100},{x:2100,y:1300},{x:2100,y:1500},
       {x:2100,y:1700},{x:2200,y:1200},{x:2200,y:1400},{x:2200,y:1600},{x:2300,y:1100},
-      {x:2300,y:1300},{x:2300,y:1500},{x:2300,y:1700},{x:2400,y:1400},{x:2500,y:1400}
+      {x:2300,y:1300},{x:2300,y:1500},{x:2300,y:1700},{x:2400,y:1400},{x:2500,y:1400},
+      {x:2000,y:1020}
     ],
     nodes:[
       {id:"eco1", name:"Recolector I", desc:"+10% de puntos por cada baja.", cost:1, requires:["root"]},
@@ -1423,7 +1870,8 @@ const SKILL_BRANCHES=[
       {id:"eco22", name:"Doble Cosecha III", desc:"+5 puntos de mejora por boss, adicional a los anteriores.", cost:9, requires:["eco19"]},
       {id:"eco23", name:"Interés III", desc:"+40 puntos de regalo adicionales al empezar la partida.", cost:9, requires:["eco19"]},
       {id:"eco24", name:"Recolector V", desc:"+10% de puntos por baja, adicional a los anteriores.", cost:9, requires:["eco18","eco21","eco22"]},
-      {id:"eco25", name:"Patrimonio", desc:"+15% de puntos por baja: el bonus máximo de la rama.", cost:9, requires:["eco24"]}
+      {id:"eco25", name:"Patrimonio", desc:"+15% de puntos por baja: el bonus máximo de la rama.", cost:9, requires:["eco24"]},
+      {id:"eco26", name:"Usura", desc:"+30% de puntos por baja, pero los núcleos de mejora te salen 25 puntos más caros. Ganás puntaje hoy y pagás progreso mañana.", cost:6, requires:["eco10"], tradeoff:true}
     ]
   },
   {
@@ -1433,7 +1881,8 @@ const SKILL_BRANCHES=[
       {x:1600,y:1700},{x:1300,y:1800},{x:1500,y:1800},{x:1400,y:1900},{x:1200,y:2000},
       {x:1400,y:2000},{x:1600,y:2000},{x:1100,y:2100},{x:1300,y:2100},{x:1500,y:2100},
       {x:1700,y:2100},{x:1200,y:2200},{x:1400,y:2200},{x:1600,y:2200},{x:1100,y:2300},
-      {x:1300,y:2300},{x:1500,y:2300},{x:1700,y:2300},{x:1400,y:2400},{x:1400,y:2500}
+      {x:1300,y:2300},{x:1500,y:2300},{x:1700,y:2300},{x:1400,y:2400},{x:1400,y:2500},
+      {x:1820,y:1980}
     ],
     nodes:[
       {id:"res1", name:"Blindaje I", desc:"La invulnerabilidad tras un golpe dura 40% más.", cost:1, requires:["root"]},
@@ -1460,7 +1909,8 @@ const SKILL_BRANCHES=[
       {id:"res22", name:"Regeneración II", desc:"Ganás 2 vidas por cada boss derrotado en vez de 1.", cost:7, requires:["res19"]},
       {id:"res23", name:"Vitalidad II", desc:"+1 vida inicial permanente adicional.", cost:7, requires:["res19"]},
       {id:"res24", name:"Último Bastión", desc:"Segunda Oportunidad se puede usar 3 veces por partida.", cost:9, requires:["res18","res21","res22"]},
-      {id:"res25", name:"Núcleo Inmortal", desc:"+1 vida inicial permanente: el máximo de la rama.", cost:10, requires:["res24"]}
+      {id:"res25", name:"Núcleo Inmortal", desc:"+1 vida inicial permanente: el máximo de la rama.", cost:10, requires:["res24"]},
+      {id:"res26", name:"Chasis Liviano", desc:"Velocidad de movimiento +2, pero la invulnerabilidad tras un golpe dura 30% menos. Esquivás mejor y perdonás peor.", cost:5, requires:["res12"], tradeoff:true}
     ]
   },
   {
@@ -1470,7 +1920,8 @@ const SKILL_BRANCHES=[
       {x:1100,y:1200},{x:1000,y:1500},{x:1000,y:1300},{x:900,y:1400},{x:800,y:1600},
       {x:800,y:1400},{x:800,y:1200},{x:700,y:1700},{x:700,y:1500},{x:700,y:1300},
       {x:700,y:1100},{x:600,y:1600},{x:600,y:1400},{x:600,y:1200},{x:500,y:1700},
-      {x:500,y:1500},{x:500,y:1300},{x:500,y:1100},{x:400,y:1400},{x:300,y:1400}
+      {x:500,y:1500},{x:500,y:1300},{x:500,y:1100},{x:400,y:1400},{x:300,y:1400},
+      {x:700,y:1880}
     ],
     nodes:[
       {id:"ctrl1", name:"Estasis I", desc:"Los enemigos comunes se mueven 8% más despacio.", cost:1, requires:["root"]},
@@ -1497,7 +1948,8 @@ const SKILL_BRANCHES=[
       {id:"ctrl22", name:"Interferencia IV", desc:"Las balas enemigas viajan 10% más despacio, adicional a los anteriores.", cost:7, requires:["ctrl19"]},
       {id:"ctrl23", name:"Ancla de Boss III", desc:"El boss se mueve 10% más despacio, adicional a los anteriores.", cost:7, requires:["ctrl19"]},
       {id:"ctrl24", name:"Impacto Ampliado III", desc:"El radio de impacto de tus balas aumenta por última vez.", cost:9, requires:["ctrl18","ctrl21","ctrl22"]},
-      {id:"ctrl25", name:"Dominio del Campo", desc:"Los enemigos disparan 10% más lento: el control máximo de la rama.", cost:9, requires:["ctrl24"]}
+      {id:"ctrl25", name:"Dominio del Campo", desc:"Los enemigos disparan 10% más lento: el control máximo de la rama.", cost:9, requires:["ctrl24"]},
+      {id:"ctrl26", name:"Campo Inestable", desc:"Los enemigos se mueven 15% más despacio, pero sus balas viajan 25% más rápido. Los cuerpos se te acercan menos y los tiros te llegan antes.", cost:5, requires:["ctrl13"], tradeoff:true}
     ]
   }
 ];
@@ -1536,7 +1988,12 @@ let derived={
   droneUnlocked:false,
   droneDuration:DRONE_BASE_DURATION,
   droneDamage:DRONE_BASE_DAMAGE,
-  droneFireInterval:DRONE_BASE_FIRE_INTERVAL
+  droneFireInterval:DRONE_BASE_FIRE_INTERVAL,
+  droneCooldown:DRONE_COOLDOWN,
+  droneDualTarget:false,
+  mineBlastDamage:MINE_BLAST_DMG,
+  mineBlastR:MINE_BLAST_R,
+  mineChainR:MINE_CHAIN_R
 };
 
 function computeDerived(set){
@@ -1547,7 +2004,8 @@ function computeDerived(set){
      Los bonos porcentuales se SUMAN entre sí (nunca se multiplican): así
      +10% y +10% muestran +20% y no +19%. */
   d.bulletDamage=1
-    +(has("dmg1")?1:0)+(has("dmg6")?1:0)+(has("dmg23")?1:0)+(has("dmg25")?1:0); // máx 5
+    +(has("dmg1")?1:0)+(has("dmg6")?1:0)+(has("dmg23")?1:0)+(has("dmg25")?1:0) // máx 5
+    +(has("dmg34")?1:0); // contrapartida: Sobrecarga Vital, se paga con una vida
   d.shootCDMult=1-((has("dmg2")?0.10:0)+(has("dmg4")?0.10:0)+(has("dmg15")?0.10:0));
   d.bulletPierce=(has("dmg3")?1:0)+(has("dmg8")?1:0);
   d.critChance=(has("dmg5")?0.12:0)+(has("dmg22")?0.08:0);
@@ -1562,12 +2020,19 @@ function computeDerived(set){
   d.qBossDamage=has("dmg13")?45:20;
   d.qRadius=Q_BASE_RADIUS+(has("dmg26")?120:0)+(has("dmg27")?120:0)+(has("dmg28")?100:0);
   d.qDamage=Q_DAMAGE+(has("dmg29")?5:0)+(has("dmg30")?5:0)+(has("dmg31")?5:0);
+  d.mineBlastDamage=MINE_BLAST_DMG+(has("dmg32")?2:0)+(has("dmg33")?1:0);
+  d.mineBlastR=MINE_BLAST_R+(has("dmg32")?10:0);
+  d.mineChainR=MINE_CHAIN_R+(has("dmg33")?25:0);
   d.qShieldOnUse=has("dmg14");
 
   d.droneUnlocked=has("dmg16");
   d.droneDuration=DRONE_BASE_DURATION+(has("dmg17")?2:0)+(has("dmg18")?2:0);
   d.droneDamage=DRONE_BASE_DAMAGE+(has("dmg19")?1:0)+(has("dmg20")?1:0);
   d.droneFireInterval=has("dmg21")?0.3:DRONE_BASE_FIRE_INTERVAL;
+  d.droneCooldown=DRONE_COOLDOWN; // fijo hoy, pero ya queda enchufado al HUD (antes el chip dividia por un campo que no existia)
+  // capstone de la sub-rama del dron: un segundo blanco DISTINTO por rafaga,
+  // elegido con la misma regla de prioridad que el primero
+  d.droneDualTarget=has("dmg35");
 
   /* ---------- ECONOMÍA ---------- */
   let scoreBonus=0;
@@ -1577,9 +2042,11 @@ function computeDerived(set){
   if(has("eco18")) scoreBonus+=0.10;
   if(has("eco24")) scoreBonus+=0.10;
   if(has("eco25")) scoreBonus+=0.15;
+  if(has("eco26")) scoreBonus+=0.30; // contrapartida: Usura, se paga con núcleos más caros
   d.scoreMult=1+scoreBonus;
   d.powerupInterval= has("eco20")?75 : has("eco14")?80 : has("eco7")?85 : has("eco2")?90 : 100;
-  d.metaInterval=    has("eco21")?75 : has("eco15")?80 : has("eco8")?85 : has("eco3")?90 : 100;
+  d.metaInterval=   (has("eco21")?75 : has("eco15")?80 : has("eco8")?85 : has("eco3")?90 : 100)
+    +(has("eco26")?25:0);
   d.bossBonusCurrency=(has("eco5")?5:0)+(has("eco12")?5:0)+(has("eco22")?5:0);
   d.startScoreBonus=(has("eco9")?40:0)+(has("eco17")?40:0)+(has("eco23")?40:0);
   d.buffDurationMult=1+(has("eco6")?0.20:0)+(has("eco13")?0.20:0)+(has("eco19")?0.20:0);
@@ -1587,21 +2054,30 @@ function computeDerived(set){
   d.magnetRadius= has("eco16")?150 : has("eco11")?100 : 0;
 
   /* ---------- RESISTENCIA ---------- */
-  d.invulDuration=1+((has("res1")?0.40:0)+(has("res6")?0.20:0)+(has("res11")?0.20:0)+(has("res18")?0.20:0));
-  d.extraSpeed=(has("res2")?1:0)+(has("res7")?1:0)+(has("res12")?1:0)+(has("res19")?1:0);
+  /* los dos nodos de contrapartida (dmg34/res26) restan acá: el guard de
+     Math.max evita que una combinación rara deje al jugador sin vidas o sin
+     ventana de invulnerabilidad. */
+  d.invulDuration=Math.max(0.5, 1
+    +((has("res1")?0.40:0)+(has("res6")?0.20:0)+(has("res11")?0.20:0)+(has("res18")?0.20:0))
+    -(has("res26")?0.30:0));
+  d.extraSpeed=(has("res2")?1:0)+(has("res7")?1:0)+(has("res12")?1:0)+(has("res19")?1:0)
+    +(has("res26")?2:0);
   d.shieldEnabled=has("res3");
   d.shieldCharges= has("res21")?3 : has("res13")?2 : 1;
   d.shieldRecharge=has("res5");
   d.shieldRechargeTime= has("res17")?20 : has("res10")?30 : 40;
-  d.startLives=3+(has("root")?1:0)
+  d.startLives=Math.max(1, 3+(has("root")?1:0)
     +(has("res4")?1:0)+(has("res9")?1:0)+(has("res14")?1:0)
-    +(has("res20")?1:0)+(has("res23")?1:0)+(has("res25")?1:0);
+    +(has("res20")?1:0)+(has("res23")?1:0)+(has("res25")?1:0)
+    -(has("dmg34")?1:0));
   d.secondChanceCount= has("res24")?3 : has("res15")?2 : has("res8")?1 : 0;
   d.lifePerBoss=(has("res22")?2:(has("res16")?1:0));
 
   /* ---------- CONTROL ---------- */
-  d.enemySpeedMult=1-((has("ctrl1")?0.08:0)+(has("ctrl4")?0.12:0)+(has("ctrl13")?0.10:0)+(has("ctrl21")?0.10:0));
-  d.enemyBulletSpeedMult=1-((has("ctrl2")?0.10:0)+(has("ctrl7")?0.10:0)+(has("ctrl14")?0.10:0)+(has("ctrl22")?0.10:0));
+  d.enemySpeedMult=1-((has("ctrl1")?0.08:0)+(has("ctrl4")?0.12:0)+(has("ctrl13")?0.10:0)+(has("ctrl21")?0.10:0)
+    +(has("ctrl26")?0.15:0)); // contrapartida: Campo Inestable, se paga abajo
+  d.enemyBulletSpeedMult=1-((has("ctrl2")?0.10:0)+(has("ctrl7")?0.10:0)+(has("ctrl14")?0.10:0)+(has("ctrl22")?0.10:0)
+    -(has("ctrl26")?0.25:0));
   d.powerupFallSpeedMult=1-((has("ctrl3")?0.20:0)+(has("ctrl15")?0.15:0));
   d.enemyFireCDMult=1+((has("ctrl5")?0.15:0)+(has("ctrl10")?0.15:0)+(has("ctrl20")?0.10:0)+(has("ctrl25")?0.10:0));
   d.enemySpawnIntervalMult=1+((has("ctrl6")?0.12:0)+(has("ctrl11")?0.13:0)+(has("ctrl19")?0.15:0));
@@ -1651,6 +2127,9 @@ const NODE_PREVIEW={
   dmg29:{field:"qDamage", fmt:"int", label:"Daño de la onda expansiva"},
   dmg30:{field:"qDamage", fmt:"int", label:"Daño de la onda expansiva"},
   dmg31:{field:"qDamage", fmt:"int", label:"Daño de la onda expansiva"},
+  dmg32:{field:"mineBlastR", fmt:"int", label:"Radio de estallido de mina"},
+  dmg33:{field:"mineBlastDamage", fmt:"int", label:"Daño de mina al detonar"},
+  dmg35:{field:"droneDualTarget", fmt:"bool", label:"Segundo blanco del dron"},
   eco1:{field:"scoreMult", fmt:"bonusPercent", label:"Bonus de puntos"},
   eco2:{field:"powerupInterval", fmt:"int", label:"Caja de power-up cada X puntos"},
   eco3:{field:"metaInterval", fmt:"int", label:"Núcleo cada X puntos"},
@@ -1725,13 +2204,27 @@ const NODE_PREVIEW={
   ctrl22:{field:"enemyBulletSpeedMult", fmt:"cdBonus", label:"Balas enemigas más lentas"},
   ctrl23:{field:"bossMoveSpeedMult", fmt:"cdBonus", label:"Boss más lento"},
   ctrl24:{field:"bulletHitRadius", fmt:"int", label:"Radio de impacto de tus balas"},
-  ctrl25:{field:"enemyFireCDMult", fmt:"bonusPercent", label:"Enemigos disparan más lento"}
+  ctrl25:{field:"enemyFireCDMult", fmt:"bonusPercent", label:"Enemigos disparan más lento"},
+
+  /* nodos de CONTRAPARTIDA: la entrada es un ARRAY de filas en vez de una sola.
+     La primera fila es lo que ganás, la que lleva `bad:true` es lo que pagás.
+     `showNodeInfo` pinta cada fila igual, pero las malas en rojo. */
+  dmg34:[{field:"bulletDamage", fmt:"int", label:"Daño por bala"},
+         {field:"startLives", fmt:"int", label:"Vidas iniciales", bad:true}],
+  eco26:[{field:"scoreMult", fmt:"bonusPercent", label:"Bonus de puntos"},
+         {field:"metaInterval", fmt:"int", label:"Núcleo cada X puntos", bad:true}],
+  res26:[{field:"extraSpeed", fmt:"int", label:"Velocidad extra"},
+         {field:"invulDuration", fmt:"seconds", label:"Invulnerabilidad tras un golpe", bad:true}],
+  ctrl26:[{field:"enemySpeedMult", fmt:"cdBonus", label:"Enemigos más lentos"},
+          {field:"enemyBulletSpeedMult", fmt:"cdBonus", label:"Balas enemigas más lentas", bad:true}]
 };
 
 function formatPreviewValue(fmt,value){
   if(fmt==="percent") return Math.round(value*100)+"%";
   if(fmt==="bonusPercent") return (value>=1?"+":"")+Math.round((value-1)*100)+"%";
-  if(fmt==="cdBonus") return "+"+Math.round((1-value)*100)+"%";
+  /* ojo: con los nodos de contrapartida esto puede dar negativo (las balas
+     enemigas terminan MÁS rápidas), así que el signo se calcula, no se fija. */
+  if(fmt==="cdBonus"){ const p=Math.round((1-value)*100); return (p>=0?"+":"")+p+"%"; }
   if(fmt==="seconds") return (Math.round(value*100)/100)+"s";
   if(fmt==="bool") return value?"Sí":"No";
   return String(value);
@@ -1863,6 +2356,41 @@ function sfxExplosion(big){
   noise.connect(sfxGain);
 }
 
+function sfxBlock(){
+  // "clank" seco de bala rebotando contra el escudo del bloqueador: sin nota,
+  // solo golpe metalico, para que no se confunda con el tick de impacto real
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="square";
+  o.frequency.setValueAtTime(1180,t);
+  o.frequency.exponentialRampToValueAtTime(520,t+0.05);
+  f.type="highpass"; f.frequency.value=900;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.05,t+0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.075);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.085);
+}
+
+function sfxCannonBreak(){
+  // "crunch" metálico grave: algo montado se soltó y se cayó. Mas corto y mas
+  // sucio que sfxShieldBreak, para que no se confunda con la caída del escudo.
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="square";
+  o.frequency.setValueAtTime(520,t);
+  o.frequency.exponentialRampToValueAtTime(90,t+0.16);
+  f.type="lowpass";
+  f.frequency.setValueAtTime(2600,t);
+  f.frequency.exponentialRampToValueAtTime(500,t+0.16);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.11,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.21);
+  makeNoiseBurst(0.12,0.09,1400).connect(sfxGain);
+}
+
 function sfxHitTick(){
   // "tick" sordo de impacto sin muerte, mucho mas agradable que un pitido agudo
   const t=ctxAudio.currentTime;
@@ -1876,6 +2404,134 @@ function sfxHitTick(){
   g.gain.exponentialRampToValueAtTime(0.0001,t+0.08);
   o.connect(f); f.connect(g); g.connect(sfxGain);
   o.start(t); o.stop(t+0.09);
+}
+
+function sfxSplit(){
+  // "crack" corto y ascendente: algo se acaba de partir en dos
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="square";
+  o.frequency.setValueAtTime(180,t);
+  o.frequency.exponentialRampToValueAtTime(520,t+0.09);
+  f.type="bandpass"; f.frequency.value=900;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.08,t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.13);
+}
+
+function sfxMineDrop(){
+  // "plop" grave y corto: algo pesado quedo apoyado en el piso
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+  o.type="sine";
+  o.frequency.setValueAtTime(320,t);
+  o.frequency.exponentialRampToValueAtTime(90,t+0.12);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.05,t+0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+  o.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.15);
+}
+
+function sfxMineArm(){
+  // bip agudo de alarma: la mecha ya esta corriendo, sali de ahi
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+  o.type="square";
+  o.frequency.setValueAtTime(1500,t);
+  o.frequency.setValueAtTime(1500,t+0.04);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.05,t+0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+  o.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.1);
+}
+
+function sfxSeederPanic(){
+  // chillido corto que TREPA: al reves que sfxMineArm (que se queda clavado) y
+  // al reves de todo lo demas del juego, que baja de tono. Se lee como "el
+  // bicho amarillo se asusto", no como una alarma para el jugador.
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="sawtooth";
+  o.frequency.setValueAtTime(320,t);
+  o.frequency.exponentialRampToValueAtTime(1400,t+0.16);
+  f.type="bandpass"; f.frequency.value=1100; f.Q.value=3;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.07,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.21);
+}
+
+function sfxThiefSteal(){
+  // el sonido de algo que se te va de las manos: dos triangle que CAEN, una
+  // atras de la otra. Deliberadamente no suena a golpe (no perdiste vida) ni a
+  // alarma (no hay nada de que escapar): suena a perdida.
+  const t=ctxAudio.currentTime;
+  for(let k=0;k<2;k++){
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+    o.type="triangle";
+    o.frequency.setValueAtTime(880-k*180,t+k*0.06);
+    o.frequency.exponentialRampToValueAtTime(220,t+k*0.06+0.18);
+    g.gain.setValueAtTime(0.0001,t+k*0.06);
+    g.gain.exponentialRampToValueAtTime(0.09,t+k*0.06+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+k*0.06+0.22);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t+k*0.06); o.stop(t+k*0.06+0.23);
+  }
+}
+
+function sfxThiefEscape(){
+  // se fue con la guita: bocinazo grave que se apaga. Es el unico sonido de
+  // derrota del juego que no es la muerte del jugador, por eso es corto y feo.
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="sawtooth";
+  o.frequency.setValueAtTime(300,t);
+  o.frequency.exponentialRampToValueAtTime(90,t+0.35);
+  f.type="lowpass";
+  f.frequency.setValueAtTime(1400,t);
+  f.frequency.exponentialRampToValueAtTime(300,t+0.35);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.10,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.4);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.42);
+}
+
+function sfxMineBlast(chain=0){
+  // estallido: golpe grave + ruido filtrado, mas seco que una explosion normal.
+  // en cadena cada eslabon sube de tono y se acorta: se escucha como un rollo.
+  const k=Math.min(chain,MINE_CHAIN_MAX);
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+  o.type="sawtooth";
+  o.frequency.setValueAtTime(220*(1+k*0.16),t);
+  o.frequency.exponentialRampToValueAtTime(35+k*10,t+0.22);
+  g.gain.setValueAtTime(Math.max(0.09,0.22-k*0.02),t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+0.24);
+  o.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.25);
+  makeNoiseBurst(0.18,0.16,1200+k*400).connect(sfxGain);
+}
+
+function sfxChainBonus(n){
+  // fanfarria corta de premio: 3 notas que trepan, mas agudas cuanto mas larga la cadena
+  const t=ctxAudio.currentTime;
+  const base=520+Math.min(n,10)*26;
+  for(let k=0;k<3;k++){
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+    o.type="square";
+    o.frequency.setValueAtTime(base*Math.pow(1.26,k),t+k*0.07);
+    g.gain.setValueAtTime(0.0001,t+k*0.07);
+    g.gain.exponentialRampToValueAtTime(0.13,t+k*0.07+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+k*0.07+0.14);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t+k*0.07); o.stop(t+k*0.07+0.15);
+  }
 }
 
 function sfxHurt(){
@@ -1901,6 +2557,37 @@ function sfxUiBlip(freqVal=660){
   o.start(t); o.stop(t+0.11);
 }
 
+/* Romper el record es el momento mas alto de una partida: se lo gana una
+   fanfarria de verdad y no el blip generico de interfaz. Arpegio mayor de 4
+   notas que trepan + un colchon grave que se abre con el filtro. */
+function sfxRecordBreak(){
+  const t=ctxAudio.currentTime;
+  [523,659,784,1047].forEach((f,i)=>{
+    const t0=t+i*0.085;
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+    o.type="square";
+    o.frequency.setValueAtTime(f,t0);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(0.17,t0+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.3);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t0); o.stop(t0+0.32);
+  });
+  for(let i=0;i<2;i++){
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(130.8*(i?1.006:1),t); // apenas desafinados = mas gordo
+    f.type="lowpass";
+    f.frequency.setValueAtTime(420,t);
+    f.frequency.linearRampToValueAtTime(2600,t+0.45);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.1,t+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.75);
+    o.connect(f); f.connect(g); g.connect(sfxGain);
+    o.start(t); o.stop(t+0.8);
+  }
+}
+
 function sfxAlarm(){
   for(let i=0;i<2;i++){
     const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
@@ -1914,6 +2601,32 @@ function sfxAlarm(){
     o.connect(g); g.connect(sfxGain);
     o.start(t0); o.stop(t0+0.26);
   }
+}
+
+function sfxEnrage(){
+  // rugido: dos sawtooth graves que trepan + un golpe seco que baja arriba
+  for(let i=0;i<2;i++){
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+    o.type="sawtooth";
+    const t0=ctxAudio.currentTime+i*0.05;
+    o.frequency.setValueAtTime(70,t0);
+    o.frequency.exponentialRampToValueAtTime(190,t0+0.5);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(0.26,t0+0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.55);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t0); o.stop(t0+0.6);
+  }
+  const o2=ctxAudio.createOscillator(), g2=ctxAudio.createGain();
+  o2.type="square";
+  const t1=ctxAudio.currentTime+0.12;
+  o2.frequency.setValueAtTime(520,t1);
+  o2.frequency.exponentialRampToValueAtTime(180,t1+0.18);
+  g2.gain.setValueAtTime(0.0001,t1);
+  g2.gain.exponentialRampToValueAtTime(0.18,t1+0.02);
+  g2.gain.exponentialRampToValueAtTime(0.0001,t1+0.22);
+  o2.connect(g2); g2.connect(sfxGain);
+  o2.start(t1); o2.stop(t1+0.24);
 }
 
 function sfxGameOver(){
@@ -1974,6 +2687,63 @@ function sfxRefresh(){
   });
 }
 
+function sfxSlowmo(){
+  // "vwooom" que cae: dos sawtooth apenas desafinados barriendo hacia abajo
+  const t=ctxAudio.currentTime;
+  const f=ctxAudio.createBiquadFilter();
+  f.type="lowpass";
+  f.frequency.setValueAtTime(2600,t);
+  f.frequency.exponentialRampToValueAtTime(360,t+0.7);
+  const g=ctxAudio.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.2,t+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.85);
+  f.connect(g); g.connect(sfxGain);
+  [1,1.01].forEach(mul=>{
+    const o=ctxAudio.createOscillator();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(520*mul,t);
+    o.frequency.exponentialRampToValueAtTime(90*mul,t+0.75);
+    o.connect(f);
+    o.start(t); o.stop(t+0.9);
+  });
+}
+
+/* Escudo de racha: dos notas que SUBEN y se quedan arriba (triangle limpio, sin
+   ruido), lo opuesto al "vwooom" que cae del slowmo. La idea es que suene a
+   "algo se enganchó y quedó puesto", no a impacto. */
+function sfxGuard(){
+  const t=ctxAudio.currentTime;
+  [523.25,784].forEach((f,i)=>{
+    const t0=t+i*0.09;
+    const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+    o.type="triangle"; o.frequency.setValueAtTime(f,t0);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(0.17,t0+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.34);
+    o.connect(g); g.connect(sfxGain);
+    o.start(t0); o.stop(t0+0.36);
+  });
+}
+
+/* El seguro se comió el golpe: nota corta y seca justo arriba del sfxHurt, para
+   que se escuche COMO CAPA sobre el sonido de daño y se lea "perdiste vida pero
+   la racha aguantó". */
+function sfxGuardSave(){
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
+  const f=ctxAudio.createBiquadFilter();
+  f.type="highpass"; f.frequency.value=900;
+  o.type="square";
+  o.frequency.setValueAtTime(660,t);
+  o.frequency.exponentialRampToValueAtTime(1180,t+0.12);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.15,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.26);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.28);
+}
+
 function sfxBeamCharge(){
   const t=ctxAudio.currentTime;
   const o=ctxAudio.createOscillator(), g=ctxAudio.createGain();
@@ -1987,19 +2757,22 @@ function sfxBeamCharge(){
   o.start(t); o.stop(t+BEAM_CHARGE+BEAM_LOCK+0.05);
 }
 
-function sfxBeamFire(){
+/* El disparo. Con `sweep` dura lo que dura el barrido y la nota SUBE en vez de
+   caer: el rayo clavado se descarga y se apaga, el que gira viene hacia vos. */
+function sfxBeamFire(sweep){
   const t=ctxAudio.currentTime;
+  const dur=sweep?BEAM_SWEEP_FIRE:BEAM_FIRE;
   const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
   o.type="sawtooth";
-  o.frequency.setValueAtTime(220,t);
-  o.frequency.exponentialRampToValueAtTime(70,t+BEAM_FIRE);
+  o.frequency.setValueAtTime(sweep?110:220,t);
+  o.frequency.exponentialRampToValueAtTime(sweep?280:70,t+dur);
   f.type="lowpass"; f.frequency.value=1800;
   g.gain.setValueAtTime(0.0001,t);
   g.gain.exponentialRampToValueAtTime(0.26,t+0.03);
-  g.gain.exponentialRampToValueAtTime(0.0001,t+BEAM_FIRE);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   o.connect(f); f.connect(g); g.connect(sfxGain);
-  o.start(t); o.stop(t+BEAM_FIRE+0.05);
-  const n=makeNoiseBurst(BEAM_FIRE*0.8,0.16,700);
+  o.start(t); o.stop(t+dur+0.05);
+  const n=makeNoiseBurst(dur*0.8,0.16,sweep?1100:700);
   n.connect(sfxGain);
 }
 
@@ -2015,6 +2788,26 @@ function sfxShardSplit(){
   g.gain.exponentialRampToValueAtTime(0.0001,t+0.24);
   o.connect(f); f.connect(g); g.connect(sfxGain);
   o.start(t); o.stop(t+0.25);
+}
+
+/* El sanador se da vuelta: es el `sfxHealTick` AL REVES. El tick de cura sube
+   de 660 a 880 con una sine limpia; esto baja de 880 a 220 con sawtooth sucia,
+   o sea "lo que te estaba curando al boss se apago y viene para vos". Suena una
+   sola vez por furia aunque se conviertan varios. */
+function sfxShardTurn(){
+  const t=ctxAudio.currentTime;
+  const o=ctxAudio.createOscillator(), g=ctxAudio.createGain(), f=ctxAudio.createBiquadFilter();
+  o.type="sawtooth";
+  o.frequency.setValueAtTime(880,t);
+  o.frequency.exponentialRampToValueAtTime(220,t+0.3);
+  f.type="lowpass";
+  f.frequency.setValueAtTime(3200,t);
+  f.frequency.exponentialRampToValueAtTime(700,t+0.3);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.16,t+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.34);
+  o.connect(f); f.connect(g); g.connect(sfxGain);
+  o.start(t); o.stop(t+0.35);
 }
 
 function sfxHealTick(){
@@ -2233,9 +3026,11 @@ const skillNodeCard=document.getElementById("skillNodeCard");
 const deathScreen=document.getElementById("deathScreen");
 const hud=document.getElementById("hud");
 const recordBadge=document.getElementById("recordBadge");
+const recordGapEl=document.getElementById("recordGap");
 const buffsEl=document.getElementById("buffs");
 const bossBar=document.getElementById("bossBar");
 const bossBarFill=document.getElementById("bossBarFill");
+const bossBarTrack=document.getElementById("bossBarTrack");
 const bossMsgEl=document.getElementById("bossMsg");
 
 function toggleSettings(forceOpen){
@@ -2358,13 +3153,88 @@ function setScreen(state){
     buffsEl.classList.add("hidden");
     bossBar.classList.add("hidden");
     bossMsgEl.style.display="none";
+    bossMsgEl.classList.remove("furia");
+    bossBarTrack.classList.remove("enraged");
     if(audioUnlocked) musicDynamicsGain.gain.setTargetAtTime(0.75,ctxAudio.currentTime,0.15);
   }
+}
+
+/* Escala de rangos al morir (mejor = arriba). Vive acá arriba porque además de
+   endGame la usan las placas de "mejor rango" del menú y de las tarjetas de
+   dificultad. */
+const RANKS=[
+  {min:85,l:"S",col:"var(--neon-yellow)",f:"IMPECABLE. SOS OTRA COSA."},
+  {min:70,l:"A",col:"var(--neon-cyan)",f:"TREMENDO. CASI PERFECTO."},
+  {min:52,l:"B",col:"var(--neon-purple)",f:"BIEN AHÍ. SE PUEDE MÁS."},
+  {min:32,l:"C",col:"#e8e0ff",f:"ZAFASTE. AFINÁ LA PUNTERÍA."},
+  {min:0, l:"D",col:"var(--neon-red)",f:"ARRANCAMOS. DALE DE NUEVO."}
+];
+const RANK_COL={};
+RANKS.forEach(r=>{ RANK_COL[r.l]=r.col; });
+/* menor = mejor rango; "" o desconocido queda último para que cualquier letra lo supere */
+function rankOrder(l){ if(!l) return 99; const i="SABCD".indexOf(l); return i<0?99:i; }
+
+/* Las 4 patas del rango, en el mismo orden en que endGame las calcula. Cada una
+   tiene su color de la paleta para que la barra se lea de un vistazo, y un
+   "goal" que dice qué hay que hacer para llenarla: sin eso la barra te informa
+   que te falta, pero no cuánto. El de AGUANTE es una función porque el techo
+   sale de la dificultad que estés jugando. */
+const RANK_PARTS=[
+  {id:"Acc",   max:40, col:"var(--neon-cyan)",   goal:()=>"90%"},
+  {id:"Combo", max:30, col:"var(--neon-yellow)", goal:()=>"30 kills"},
+  {id:"Boss",  max:20, col:"var(--neon-pink)",   goal:()=>"3"},
+  {id:"Time",  max:10, col:"var(--neon-purple)", goal:()=>formatTime(diff().rankTimeCap)}
+];
+/* token: si ya volviste al menú, los blips de una muerte vieja no suenan */
+let rankAnimToken=0;
+/* Desglose del rango. Sin esto la letra es un veredicto sin explicación: el
+   jugador ve "C" y no sabe si le falta puntería o aguante. Las barras se llenan
+   escalonadas y el pie dice cuánto falta para el rango de arriba, que es lo
+   único accionable de toda la pantalla de muerte. */
+function paintRankBreakdown(pts,total,rk){
+  const tok=++rankAnimToken;
+  RANK_PARTS.forEach((p,i)=>{
+    const fill=document.getElementById("rb"+p.id+"Fill");
+    document.getElementById("rb"+p.id+"Num").textContent=Math.round(pts[i])+"/"+p.max;
+    const goalEl=document.getElementById("rb"+p.id+"Goal");
+    goalEl.textContent="→"+p.goal();
+    // la pata llena se pinta del color de la barra: es el "listo, esta ya está"
+    goalEl.style.color=pts[i]>=p.max-0.5?p.col:"";
+    fill.style.color=p.col;
+    fill.style.transitionDelay=(0.20+i*0.13)+"s";
+    fill.style.width="0%";                 // reinicia la animación en cada muerte
+    void fill.offsetWidth;
+    fill.style.width=Math.max(0,Math.min(100,pts[i]/p.max*100))+"%";
+    setTimeout(()=>{ if(tok===rankAnimToken) sfxUiBlip(470+i*95); },300+i*130);
+  });
+  const idx=RANKS.indexOf(rk);
+  let cola;
+  if(idx>0){
+    const arriba=RANKS[idx-1];
+    const falta=Math.max(1,Math.round(arriba.min-total));
+    cola=" · te "+(falta===1?"falta 1":"faltan "+falta)+" para "
+        +'<b style="color:'+arriba.col+'">'+arriba.l+"</b>";
+  }else{
+    cola=" · no hay nada más arriba";
+  }
+  document.getElementById("rbTotal").innerHTML="TOTAL <b>"+Math.round(total)+"</b>/100"+cola;
 }
 
 function refreshRecordDisplays(){
   document.getElementById("menuRecord").textContent=bestScore;
   document.getElementById("recordVal").textContent=bestScore;
+  const mr=document.getElementById("menuBestRank");
+  if(mr){
+    const l=bestRankByDifficulty[diff().key]||"";
+    if(l){
+      mr.textContent="· RANGO "+l;
+      mr.style.color=RANK_COL[l]||"";
+      mr.classList.remove("hidden");
+    }else{
+      mr.textContent="";
+      mr.classList.add("hidden");
+    }
+  }
 }
 
 function refreshCurrencyDisplays(){
@@ -2375,33 +3245,68 @@ function refreshCurrencyDisplays(){
 }
 
 function resetEntities(){
-  bullets=[]; enemies=[]; enemyBullets=[]; particles=[]; powerups=[];
+  bullets=[]; enemies=[]; enemyBullets=[]; particles=[]; powerups=[]; mines=[]; mineBlasts=[];
   boss=null; bossActive=false; bossCD=0; bossesDefeated=0; nextBossTime=60; guardians=[]; shards=[];
+  bossBarTrack.classList.remove("enraged"); bossMsgEl.classList.remove("furia");
   score=derived.startScoreBonus; lives=derived.startLives; time=0; shootCD=0; invul=0; enemiesKilled=0;
   enemySpawnTimer=1;
   nextPowerupScore=derived.powerupInterval;
   nextMetaScore=derived.metaInterval;
   metaEarnedThisRun=0;
   multishotTimer=0; speedBoostTimer=0; score2xTimer=0;
+  slowmoTimer=0; slowAccum=0; fxSlow=1;
+  comboKills=0; comboTimer=0; comboPulse=0;
+  comboGuardTimer=0; comboGuardFlash=0;
+  shotsFired=0; shotsHit=0; bestComboKills=0;
   shieldCharge=derived.shieldEnabled?derived.shieldCharges:0;
   shieldRechargeTimer=0;
   secondChanceUsesLeft=derived.secondChanceCount;
   qCooldown=0;
   shockwaveFX=0;
+  mineGrace=0;
+  mineChainN=0; mineChainT=0; mineChainX=0; mineChainY=0; floatTexts=[];
+  introSeen=new Set(); enemyIntro=null; // cada partida vuelve a presentar los especiales
   stunTimer=0;
+  shakeMag=0; shakeT=0; shakeT0=1; hitStopT=0; hurtFlash=0; chromAb=0; bossDeathFX=0; edgeFlashT=0;
   droneTimer=0; droneCooldown=0; droneFireTimer=0; droneTarget=null;
   droneBeamTimer=0; droneBeamFrom=null; droneBeamTo=null;
+  droneTarget2=null; droneBeamTimer2=0; droneBeamFrom2=null; droneBeamTo2=null;
   player.x=c.width/2; player.y=c.height-80;
   keys={}; mouseShootHeld=false;
   recordAtRunStart=bestScore;
   beatingRecord=false;
+  nearRecord=false;
+  lastRecordGap=-1;
+  recordFX=0;
+  recordGapEl.textContent="";
   recordBadge.classList.remove("is-beating");
+  recordBadge.classList.remove("is-near");
+  document.getElementById("recordTag").textContent="RÉCORD";
 }
 
 function startGame(){
   resetEntities();
   setScreen("playing");
   unlockAudio();
+}
+
+/* Escribe la marca personal al lado de un stat de la pantalla de muerte.
+   Tres estados: superada ("★ NUEVA MARCA"), marca previa a la vista
+   ("mejor: N"), o nada todavía / no computa (texto de aviso o vacío). */
+function paintStatBest(id,isNew,prevText,fallback){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove("is-new");
+  if(isNew){
+    el.textContent="★ NUEVA MARCA";
+    // el pop se re-dispara cada muerte reiniciando la animación
+    void el.offsetWidth;
+    el.classList.add("is-new");
+  }else if(prevText){
+    el.textContent="mejor: "+prevText;
+  }else{
+    el.textContent=fallback;
+  }
 }
 
 function endGame(finalMessage="PERDISTE"){
@@ -2416,9 +3321,82 @@ function endGame(finalMessage="PERDISTE"){
     StorageHelper.set(HS_KEY,bestScore);
   }
   recordBadge.classList.remove("is-beating");
+  recordBadge.classList.remove("is-near");
   document.getElementById("finalScore").textContent=score;
   document.getElementById("finalTime").textContent=formatTime(time);
   document.getElementById("finalKills").textContent=enemiesKilled;
+  const accEl=document.getElementById("finalAccuracy");
+  const acc=shotsFired>0?Math.round(shotsHit/shotsFired*100):0;
+  accEl.textContent=acc+"%";
+  accEl.style.color=acc>=75?"var(--neon-cyan)":(acc<35&&shotsFired>20?"var(--neon-red)":"");
+  const comboEl=document.getElementById("finalCombo");
+  if(bestComboKills>=5){
+    const cm=1+Math.min(COMBO_MAX_BONUS,Math.floor(bestComboKills/5)*0.5);
+    comboEl.textContent=bestComboKills+" kills (x"+cm+")";
+    comboEl.style.color=cm>=1+COMBO_MAX_BONUS?"#ff2d55":"";
+  }else{
+    comboEl.textContent="—";
+    comboEl.style.color="";
+  }
+
+  // Marca personal de puntería y racha, por dificultad. El récord de puntaje
+  // ya existía, pero premiaba jugar MUCHO: una partida corta y quirúrgica no
+  // dejaba huella en ningún lado. Estas dos son marcas de HABILIDAD, no de
+  // aguante, y viven aparte del score y del rango.
+  const statsKey=diff().key;
+  const pb=bestStatsByDifficulty[statsKey]||(bestStatsByDifficulty[statsKey]={acc:0,combo:0});
+  // la puntería sólo cuenta con volumen: 3 tiros al 100% no son una marca
+  const accCounts=shotsFired>=STAT_PB_MIN_SHOTS;
+  const newAcc=accCounts && acc>pb.acc;
+  const newCombo=bestComboKills>pb.combo;
+  paintStatBest("accBestTag", newAcc, pb.acc>0?pb.acc+"%":"", accCounts?"":"(tirá "+STAT_PB_MIN_SHOTS+"+ para marcar)");
+  paintStatBest("comboBestTag", newCombo, pb.combo>0?pb.combo+" kills":"", "");
+  if(newAcc) pb.acc=acc;
+  if(newCombo) pb.combo=bestComboKills;
+  if(newAcc||newCombo){
+    StorageHelper.set(BESTSTATS_KEY,bestStatsByDifficulty);
+    setTimeout(()=>sfxUiBlip(1040),620);
+  }
+
+  // Rango: junta puntería, mejor racha, bosses y aguante en una sola nota arcade.
+  // 0-100 pts; la puntería pesa más porque es lo más difícil de fingir.
+  const accPts=Math.max(0,Math.min(1,(acc-20)/70))*40;
+  const comboPts=Math.min(bestComboKills/30,1)*30;
+  const bossPts=Math.min(bossesDefeated/3,1)*20;
+  // el techo lo pone cada dificultad (rankTimeCap): aguantar 5 minutos en
+  // experto no es el mismo logro que en fácil, así que un techo único hacía
+  // que esta pata fuera regalada abajo e inalcanzable arriba.
+  const timePts=Math.min(time/diff().rankTimeCap,1)*10;
+  const rankPts=accPts+comboPts+bossPts+timePts;
+  const rk=RANKS.find(r=>rankPts>=r.min);
+  const rankLetterEl=document.getElementById("rankLetter");
+  rankLetterEl.textContent=rk.l;
+  rankLetterEl.style.color=rk.col;
+  document.getElementById("rankFlavor").textContent=rk.f;
+  document.getElementById("deathRank").classList.remove("hidden");
+  // el pop se re-dispara cada muerte reiniciando la animación
+  rankLetterEl.style.animation="none"; void rankLetterEl.offsetWidth;
+  rankLetterEl.style.animation="";
+  paintRankBreakdown([accPts,comboPts,bossPts,timePts],rankPts,rk);
+
+  // Mejor rango histórico de ESTA dificultad: se guarda si esta partida lo supera.
+  const rankDiffKey=diff().key;
+  const prevBestRank=bestRankByDifficulty[rankDiffKey]||"";
+  const improvedRank=rankOrder(rk.l)<rankOrder(prevBestRank);
+  if(improvedRank){
+    bestRankByDifficulty[rankDiffKey]=rk.l;
+    StorageHelper.set(BESTRANKS_KEY,bestRankByDifficulty);
+  }
+  const rankBestEl=document.getElementById("rankBest");
+  if(improvedRank && prevBestRank){
+    rankBestEl.textContent="★ NUEVO MEJOR RANGO ACÁ ★";
+    rankBestEl.style.color=rk.col;
+    setTimeout(()=>sfxUiBlip(920),380);
+  }else{
+    rankBestEl.textContent="TU MEJOR ACÁ: "+(bestRankByDifficulty[rankDiffKey]||rk.l);
+    rankBestEl.style.color="";
+  }
+
   document.getElementById("finalRecord").textContent=bestScore;
   document.getElementById("finalMeta").textContent=metaEarnedThisRun;
   document.getElementById("finalTitle").textContent=finalMessage;
@@ -2657,6 +3635,11 @@ document.getElementById("rankingBackBtn").onclick=()=>{
 const difficultyScreen=document.getElementById("difficultyScreen");
 const DIFF_KEY="hexShooterDefinitivo_difficulty";
 const BESTS_KEY="hexShooterDefinitivo_bests";
+const BESTRANKS_KEY="hexShooterDefinitivo_bestranks";
+const BESTSTATS_KEY="hexShooterDefinitivo_beststats";
+/* piso de disparos para que una partida de 3 tiros no se lleve la marca de
+   puntería. Con 25 ya hay volumen suficiente y se alcanza en pocos segundos. */
+const STAT_PB_MIN_SHOTS=25;
 
 function fmtMin(sec){
   const m=Math.floor(sec/60), s2=sec%60;
@@ -2674,6 +3657,8 @@ function renderDifficultyCards(){
     const unlocked=isDifficultyUnlocked(d);
     const sel=i===currentDifficulty;
     const best=bestByDifficulty[d.key]||0;
+    const bestRk=bestRankByDifficulty[d.key]||"";
+    const pb=bestStatsByDifficulty[d.key]||{acc:0,combo:0};
     const body=
       '<div class="diff-name" style="color:'+d.color+'">'+d.name+'</div>'+
       '<div class="diff-tag">'+d.tagline+'</div>'+
@@ -2686,8 +3671,19 @@ function renderDifficultyCards(){
         '<span class="diff-stat"><i>❤</i>Vida enemiga<b>×'+d.enemyHpMult.toFixed(1)+'</b></span>'+
         '<span class="diff-stat"><i>⚡</i>Velocidad enemiga<b>×'+d.enemySpeedMult.toFixed(1)+'</b></span>'+
         '<span class="diff-stat"><i>➤</i>Balas enemigas<b>×'+d.bulletSpeedMult.toFixed(1)+'</b></span>'+
+        '<span class="diff-stat"><i>⏱</i>Aguante para el rango<b>'+fmtMin(d.rankTimeCap)+'</b></span>'+
       '</div>'+
-      '<div class="diff-best">🏆 Tu récord · <b>'+best.toLocaleString("es-AR")+'</b></div>';
+      '<div class="diff-best">🏆 Tu récord · <b>'+best.toLocaleString("es-AR")+'</b>'+
+        (bestRk?' <span class="diff-best-rank" style="color:'+(RANK_COL[bestRk]||'#e8e0ff')+'">· rango '+bestRk+'</span>':'')+
+      '</div>'+
+      // marcas de HABILIDAD (no de aguante): sólo se muestran si ya existen,
+      // así una dificultad recién estrenada no arranca con dos ceros tristes
+      ((pb.acc>0||pb.combo>0)
+        ? '<div class="diff-pb">'+
+            (pb.acc>0?'<span>🎯 <b>'+pb.acc+'%</b></span>':'')+
+            (pb.combo>0?'<span>🔥 <b>'+pb.combo+'</b> kills</span>':'')+
+          '</div>'
+        : '');
     let lock="";
     if(!unlocked){
       const from=diffByKey(d.unlockFrom);
@@ -2745,6 +3741,7 @@ document.getElementById("diffCards").addEventListener("click",e=>{
    pestaña normal el navegador lo bloquea sin avisar. Por eso intentamos
    cerrar y, si seguimos vivos, mostramos una pantalla de despedida. */
 const quitConfirm=document.getElementById("quitConfirm");
+const byeScreen=document.getElementById("byeScreen");
 
 function openQuitConfirm(){
   sfxUiBlip(430);
@@ -2756,29 +3753,27 @@ function closeQuitConfirm(){
 }
 function doQuit(){
   quitConfirm.classList.add("hidden");
-  // cortar todo el audio antes de irse
-  try{ musicGain.gain.value=0; sfxGain.gain.value=0; }catch(e){}
-  try{ ctxAudio.close(); }catch(e){}
-
-  /* Los navegadores sólo dejan que una pestaña se cierre a sí misma si fue
-     abierta por script. Probamos los tres métodos que existen y, si el
-     navegador los bloquea, dejamos la pestaña en blanco: es lo más parecido
-     a "cerrado" que se puede lograr desde una página web. */
-  try{ window.open("","_self"); }catch(e){}
+  // cortamos el audio para que no siga sonando en la pantalla de despedida
+  try{ musicGain.gain.value=0; }catch(e){}
   try{ window.close(); }catch(e){}
-  try{ window.top.close(); }catch(e){}
-
   setTimeout(()=>{
     if(!document.hidden){
-      try{ location.replace("about:blank"); }
-      catch(e){ document.documentElement.innerHTML=""; document.body.style.background="#000"; }
+      document.getElementById("byeRecord").textContent=bestScore;
+      menuScreen.classList.add("hidden");
+      byeScreen.classList.remove("hidden");
     }
-  },150);
+  },180);
 }
 
 document.getElementById("quitBtn").onclick=openQuitConfirm;
 document.getElementById("quitCancelBtn").onclick=closeQuitConfirm;
 document.getElementById("quitConfirmBtn").onclick=doQuit;
+document.getElementById("byeBackBtn").onclick=()=>{
+  byeScreen.classList.add("hidden");
+  menuScreen.classList.remove("hidden");
+  try{ musicGain.gain.value=parseFloat(musicVolEl.value)||0.6; }catch(e){}
+  sfxUiBlip(760);
+};
 // clic fuera del cuadro o Escape = cancelar
 quitConfirm.addEventListener("click",e=>{ if(e.target===quitConfirm) closeQuitConfirm(); });
 
@@ -2902,6 +3897,13 @@ function buildSkillTreeSVG(){
         }
       }else{
         svg+='<rect x="'+(p.x-r)+'" y="'+(p.y-r)+'" width="'+(r*2)+'" height="'+(r*2)+'" rx="6" fill="'+fill+'" stroke="'+stroke+'" stroke-width="3"/>';
+        /* nodo de contrapartida: aro rojo extra, mismo idioma visual que el aro
+           amarillo de las habilidades. Se lee "este tiene letra chica". */
+        if(node.tradeoff){
+          const tr=r+6;
+          svg+='<rect x="'+(p.x-tr)+'" y="'+(p.y-tr)+'" width="'+(tr*2)+'" height="'+(tr*2)+'" rx="9" fill="none" stroke="#ff2d55" stroke-width="2" opacity="0.85"/>';
+          svg+='<text x="'+(p.x+r+3)+'" y="'+(p.y-r-1)+'" text-anchor="middle" font-family="Share Tech Mono,monospace" font-size="17" font-weight="700" fill="#ff2d55">⚖</text>';
+        }
         if(available){
           const pulseR=r+6;
           svg+='<rect x="'+(p.x-pulseR)+'" y="'+(p.y-pulseR)+'" width="'+(pulseR*2)+'" height="'+(pulseR*2)+'" rx="9" fill="none" stroke="'+branch.color+'" stroke-width="1.5" opacity="0.6"><animate attributeName="opacity" values="0.6;0.1;0.6" dur="1.6s" repeatCount="indefinite"/></rect>';
@@ -2953,29 +3955,36 @@ function showNodeInfo(id){
   else if(metaCurrency<node.cost){ statusText="TE FALTAN "+(node.cost-metaCurrency)+" ⬡ (CUESTA "+node.cost+")"; statusCls="status-poor"; }
   else { statusText="DISPONIBLE POR "+node.cost+" ⬡"; statusCls="status-ready"; }
 
-  const kicker=node.ability ? "★ Habilidad" : branch.name;
+  const isTradeoff=!!node.tradeoff;
+  const kicker=node.ability ? "★ Habilidad" : (isTradeoff ? "⚖ Contrapartida" : branch.name);
+  const kickerCol=isTradeoff ? "#ffe94d" : branch.color;
 
+  /* la entrada de NODE_PREVIEW puede ser una fila sola o un array de filas
+     (los nodos de contrapartida muestran lo que ganás y lo que pagás). */
   let previewHTML="";
-  const prev=NODE_PREVIEW[id];
-  if(prev){
-    const beforeStr=formatPreviewValue(prev.fmt,derived[prev.field]);
-    if(purchased){
-      previewHTML='<div class="skill-preview"><span class="preview-label">'+prev.label+'</span>'+
-        '<span class="preview-values"><span class="preview-after">'+beforeStr+'</span></span></div>';
-    }else{
-      const afterSet=new Set(purchasedUpgrades);
-      afterSet.add(id);
-      const afterStr=formatPreviewValue(prev.fmt,computeDerived(afterSet)[prev.field]);
-      previewHTML='<div class="skill-preview"><span class="preview-label">'+prev.label+'</span>'+
-        '<span class="preview-values"><span class="preview-before">'+beforeStr+'</span>'+
-        '<span class="preview-arrow">→</span>'+
-        '<span class="preview-after">'+afterStr+'</span></span></div>';
-    }
+  const prevRaw=NODE_PREVIEW[id];
+  if(prevRaw){
+    const rows=Array.isArray(prevRaw)?prevRaw:[prevRaw];
+    const after=purchased?null:computeDerived(new Set([...purchasedUpgrades,id]));
+    rows.forEach(prev=>{
+      const beforeStr=formatPreviewValue(prev.fmt,derived[prev.field]);
+      const cls="skill-preview"+(prev.bad?" is-bad":"");
+      if(purchased){
+        previewHTML+='<div class="'+cls+'"><span class="preview-label">'+prev.label+'</span>'+
+          '<span class="preview-values"><span class="preview-after">'+beforeStr+'</span></span></div>';
+      }else{
+        const afterStr=formatPreviewValue(prev.fmt,after[prev.field]);
+        previewHTML+='<div class="'+cls+'"><span class="preview-label">'+prev.label+'</span>'+
+          '<span class="preview-values"><span class="preview-before">'+beforeStr+'</span>'+
+          '<span class="preview-arrow">→</span>'+
+          '<span class="preview-after">'+afterStr+'</span></span></div>';
+      }
+    });
   }
 
   document.getElementById("skillCardBody").innerHTML=
     '<div class="skill-card-accent" style="background:'+branch.color+';box-shadow:0 0 12px '+branch.color+';"></div>'+
-    '<div class="skill-card-kicker" style="color:'+branch.color+'">'+kicker+'</div>'+
+    '<div class="skill-card-kicker" style="color:'+kickerCol+'">'+kicker+'</div>'+
     '<div class="skill-card-title" style="color:'+branch.color+'">'+node.name+'</div>'+
     '<div class="skill-card-desc">'+node.desc+'</div>'+
     previewHTML+
@@ -3059,16 +4068,18 @@ initStars();
 
 let gridOffset=0;
 function drawBackground(){
+  // margen extra (M) para que el temblor de camara no deje bordes sin pintar
+  const M=MAX_SHAKE+4;
   if(potatoMode){
     // sin degradado: un color plano cuesta muchisimo menos por frame
     ctx.fillStyle="#07021a";
-    ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillRect(-M,-M,c.width+M*2,c.height+M*2);
   }else{
     const g=ctx.createLinearGradient(0,0,0,c.height);
     g.addColorStop(0,"#0b0320");
     g.addColorStop(1,"#04010a");
     ctx.fillStyle=g;
-    ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillRect(-M,-M,c.width+M*2,c.height+M*2);
   }
 
   ctx.fillStyle="#ffffff";
@@ -3089,7 +4100,7 @@ function drawBackground(){
     const yy=y+gridOffset;
     if(yy<horizon) continue;
     ctx.globalAlpha=Math.max(0,1-((yy-horizon)/(c.height-horizon)));
-    ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(c.width,yy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-M,yy); ctx.lineTo(c.width+M,yy); ctx.stroke();
   }
   const vanishX=c.width/2;
   ctx.globalAlpha=0.3;
@@ -3143,19 +4154,25 @@ function bossColor(tier){
   return "#ff9d3d";
 }
 
+function drawDroneBeam(from,to,timer){
+  if(timer<=0 || !from || !to) return;
+  const a=Math.min(1,timer/0.12);
+  ctx.strokeStyle="rgba(83,255,236,"+(0.9*a)+")";
+  ctx.lineWidth=4;
+  ctx.shadowColor="#00f6ff"; ctx.shadowBlur=16;
+  ctx.beginPath(); ctx.moveTo(from.x,from.y); ctx.lineTo(to.x,to.y); ctx.stroke();
+  ctx.strokeStyle="rgba(255,255,255,"+a+")"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(from.x,from.y); ctx.lineTo(to.x,to.y); ctx.stroke();
+}
+
 function drawDrone(){
-  if(droneTimer<=0 && droneBeamTimer<=0) return;
+  if(droneTimer<=0 && droneBeamTimer<=0 && droneBeamTimer2<=0) return;
   const dx=Math.min(c.width-24,player.x+43), dy=Math.max(24,player.y-40);
   ctx.save();
-  if(droneBeamTimer>0 && droneBeamFrom && droneBeamTo){
-    const a=Math.min(1,droneBeamTimer/0.12);
-    ctx.strokeStyle="rgba(83,255,236,"+(0.9*a)+")";
-    ctx.lineWidth=4;
-    ctx.shadowColor="#00f6ff"; ctx.shadowBlur=16;
-    ctx.beginPath(); ctx.moveTo(droneBeamFrom.x,droneBeamFrom.y); ctx.lineTo(droneBeamTo.x,droneBeamTo.y); ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,"+a+")"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(droneBeamFrom.x,droneBeamFrom.y); ctx.lineTo(droneBeamTo.x,droneBeamTo.y); ctx.stroke();
-  }
+  drawDroneBeam(droneBeamFrom,droneBeamTo,droneBeamTimer);
+  // segundo rayo (Doble Objetivo): mismo dibujo, sale del mismo dron, solo
+  // cambia el blanco al que apunta
+  drawDroneBeam(droneBeamFrom2,droneBeamTo2,droneBeamTimer2);
   if(droneTimer>0){
     polygon(dx,dy,4,12,"#63ffe8",16);
     ctx.fillStyle="#07111d"; ctx.fillRect(dx-3,dy-3,6,6);
@@ -3163,7 +4180,130 @@ function drawDrone(){
   ctx.restore();
 }
 
+/* RETICULA DEL DRON. Hasta ahora el dron elegia blanco en silencio y lo unico
+   que se veia era el rayo, 0.12s DESPUES de haber decidido. Con la mira puesta
+   antes del tiro, la regla de prioridad deja de estar escondida en el codigo y
+   pasa a ser algo que el jugador lee, aprende y aprovecha: si ves la mira roja
+   clavada sobre el ladron ya sabes que de eso se ocupa el dron, y te podes
+   dedicar a cubrirte vos.
+   Cian = "estoy limpiando lo que tengo cerca". Rojo = "esto es lo urgente".
+   Los dos colores son de la paleta y son los mismos que el juego ya usa para
+   "aliado" y "peligro" en todos lados. */
+function drawDroneLock(){
+  if(droneTimer<=0) return;
+  if(droneTarget) drawDroneLockOn(droneTarget);
+  // el segundo blanco (Doble Objetivo) usa la MISMA mira: el jugador ya
+  // aprendio a leer cian/rojo con el primero, no hace falta un tercer color
+  if(droneTarget2) drawDroneLockOn(droneTarget2);
+}
+
+function drawDroneLockOn(t){
+  const urgent=dronePriorityBonus(t)>0;
+  const col=urgent?"#ff2d55":"#00f6ff";
+  const r=(t.size||24)+10;
+  const tt=performance.now()/1000;
+  ctx.save();
+  ctx.translate(t.x,t.y);
+  if(!potatoMode){
+    ctx.rotate(tt*(urgent?2.2:0.7)); // el blanco urgente gira mas nervioso
+    ctx.shadowColor=col; ctx.shadowBlur=urgent?14:8;
+  }
+  ctx.strokeStyle=col;
+  ctx.lineWidth=urgent?2.4:1.5;
+  ctx.globalAlpha=urgent?0.95:0.7;
+  // cuatro corchetes en las esquinas y no un circulo cerrado: se lee como una
+  // mira y deja ver el bicho que hay abajo (color, forma, barra de vida)
+  for(let k=0;k<4;k++){
+    const a=Math.PI/4+(Math.PI/2)*k;
+    ctx.beginPath();
+    ctx.arc(0,0,r,a-0.42,a+0.42);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // anillo que se cierra sobre el blanco urgente: la mira "agarra". Es el unico
+  // pedazo caro del efecto, asi que es lo primero que se va en potato; los
+  // corchetes rojos quedan igual porque ahi esta la informacion.
+  if(urgent && !potatoMode){
+    const k=(tt*1.7)%1;
+    ctx.save();
+    ctx.globalAlpha=0.5*k;
+    ctx.strokeStyle=col;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.arc(t.x,t.y,r+22*(1-k),0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawMines(){
+  const now=performance.now()/1000;
+  // ondas de estallido (se leen aunque la mina ya no exista)
+  for(const bl of mineBlasts){
+    // cuanto mas adentro de una cadena, mas rojo y mas grueso el aro:
+    // la reaccion se lee de un vistazo aunque pase en 3 frames
+    const k=bl.chain||0;
+    // celeste = detonacion propia (la onda Q barriendo el campo): no te muerde
+    const col=bl.friendly?"#00f6ff":(k>0?"#ff2d55":SEEDER_COLOR);
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,bl.t)*(0.55+Math.min(k,MINE_CHAIN_MAX)*0.05);
+    ctx.strokeStyle=col;
+    ctx.lineWidth=3+Math.min(k,MINE_CHAIN_MAX)*0.5;
+    if(!potatoMode){ ctx.shadowColor=col; ctx.shadowBlur=16; }
+    ctx.beginPath();
+    ctx.arc(bl.x,bl.y,derived.mineBlastR*(1-bl.t*bl.t),0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+    // aro fantasma del alcance de cadena: solo aparece si el nodo Cadena
+    // Detonante esta comprado (bl.chainR>MINE_CHAIN_R), asi el jugador VE de
+    // donde sale el bonus de puntaje mas grande y no queda como numero oculto
+    if(bl.chainR>MINE_CHAIN_R){
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,bl.t)*0.35;
+      ctx.strokeStyle=SEEDER_COLOR;
+      ctx.lineWidth=1.5;
+      ctx.setLineDash([5,6]);
+      ctx.beginPath();
+      ctx.arc(bl.x,bl.y,bl.chainR,0,Math.PI*2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+  for(const m of mines){
+    const armed=m.arm<=0;
+    const fading=m.life<1 ? m.life : 1;
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,fading)*(armed?1:0.5);
+    if(!armed){
+      // inerte: circulito tenue, todavia no muerde
+      ctx.fillStyle="#7a6f2a";
+      ctx.beginPath(); ctx.arc(m.x,m.y,5,0,Math.PI*2); ctx.fill();
+    }else{
+      const priming=m.fuse>0;
+      // rojo = te va a morder. celeste = la encendiste vos con la Q y estas cubierto
+      const hot=priming ? (mineGrace>0?"#00f6ff":"#ff2d55") : SEEDER_COLOR;
+      // parpadeo: lento si espera, frenetico si ya le corre la mecha
+      const blink=priming ? (Math.sin(now*40)>0?1:0.25)
+                          : 0.55+0.45*Math.sin(now*6+m.x*0.05);
+      if(!potatoMode){ ctx.shadowColor=hot; ctx.shadowBlur=priming?18:10; }
+      ctx.fillStyle=hot;
+      ctx.globalAlpha=Math.max(0,fading)*blink;
+      ctx.beginPath(); ctx.arc(m.x,m.y,6,0,Math.PI*2); ctx.fill();
+      // aro que muestra el radio en el que te va a morder
+      ctx.globalAlpha=Math.max(0,fading)*(priming?0.5:0.18);
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=hot;
+      ctx.lineWidth=priming?2:1;
+      ctx.beginPath(); ctx.arc(m.x,m.y,MINE_TRIGGER_R,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+}
+
 function drawGameplay(){
+  drawMines();
   if(invul<=0 || Math.floor(invul*10)%2===0){
     // aturdido: la nave se apaga a gris amarillento para que se note que no responde
     polygon(player.x,player.y,6,player.size,stunTimer>0?"#c9a227":"#00f6ff",18);
@@ -3205,6 +4345,29 @@ function drawGameplay(){
     }
     ctx.restore();
   }
+  /* Seguro de racha: anillo ROSA PUNTEADO que gira, deliberadamente distinto de
+     los anillos cianos y llenos del escudo del árbol — son dos cosas parecidas
+     (algo que "aguanta un golpe") y tienen que leerse aparte de un vistazo: el
+     cián te salva la vida, el rosa te salva la racha. El anillo va por fuera de
+     todas las cargas de escudo para que nunca se pisen. */
+  if(comboGuardTimer>0 || comboGuardFlash>0){
+    const gt=performance.now()/1000;
+    const f=comboGuardFlash;
+    const gr=player.size+15+shieldCharge*5+f*10; // el destello lo empuja hacia afuera
+    ctx.save();
+    ctx.strokeStyle="rgba(255,47,176,"+(0.5+f*0.5)+")";
+    ctx.lineWidth=2+f*2.5;
+    if(!potatoMode){
+      ctx.shadowColor="#ff2fb0"; ctx.shadowBlur=10+f*20;
+      ctx.setLineDash([9,7]);
+      ctx.lineDashOffset=-gt*34; // gira lento: "esto está armado"
+    }
+    ctx.beginPath();
+    ctx.arc(player.x,player.y,gr,0,Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
 
   drawDrone();
 
@@ -3233,6 +4396,98 @@ function drawGameplay(){
       ctx.fillRect(e.x-w/2,e.y+e.size+6,w,4);
       ctx.fillStyle=KAMIKAZE_COLOR;
       ctx.fillRect(e.x-w/2,e.y+e.size+6,w*frac,4);
+    }else if(e.splitter){
+      polygon(e.x,e.y,6,e.size,SPLITTER_COLOR,potatoMode?0:14);
+      // nucleo interno girado: telegrafia que adentro hay dos mitades
+      polygon(e.x,e.y,6,e.size*0.48,"#d9b3ff",potatoMode?0:8,Math.PI/6);
+    }else if(e.splitChild){
+      polygon(e.x,e.y,3,e.size,SPLITTER_COLOR,potatoMode?0:10,e.rot);
+    }else if(e.blocker){
+      // el arco dibuja EXACTAMENTE la cuña que bloquea: lo que ves tapado, tapa
+      const f=Math.max(0,e.sFlash||0);
+      const R=e.size+BLOCKER_SHIELD_R;
+      ctx.save();
+      if(!potatoMode){
+        ctx.fillStyle="rgba(255,47,176,"+(0.10+f*0.24)+")";
+        ctx.beginPath();
+        ctx.moveTo(e.x,e.y);
+        ctx.arc(e.x,e.y,R,e.face-BLOCKER_ARC,e.face+BLOCKER_ARC);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowColor=BLOCKER_COLOR; ctx.shadowBlur=14+f*18;
+      }
+      ctx.strokeStyle= f>0.05 ? "#ffd6f0" : BLOCKER_COLOR;
+      ctx.lineWidth=4+f*2;
+      ctx.beginPath();
+      ctx.arc(e.x,e.y,R-2,e.face-BLOCKER_ARC,e.face+BLOCKER_ARC);
+      ctx.stroke();
+      ctx.restore();
+      // el vertice 0 del poligono apunta hacia arriba, de ahi el +PI/2 para
+      // que el pico del cuerpo mire para el mismo lado que el escudo
+      polygon(e.x,e.y,5,e.size*0.86,BLOCKER_COLOR,potatoMode?0:12,e.face+Math.PI/2);
+      const w=32, frac=Math.max(0,e.hp/e.maxHp);
+      ctx.fillStyle="rgba(0,0,0,0.55)";
+      ctx.fillRect(e.x-w/2,e.y+e.size+6,w,4);
+      ctx.fillStyle=BLOCKER_COLOR;
+      ctx.fillRect(e.x-w/2,e.y+e.size+6,w*frac,4);
+    }else if(e.seeder){
+      // rombo amarillo con nucleo girando al reves: "algo esta soltando cosas".
+      // En panico se pone rojo y late (esta vaciando el cargador y se raja);
+      // agotado queda apagado y opaco, que es el cartel de "pegale ahora".
+      const pan=e.panic>0, spent=e.spent>0;
+      const col=pan?"#ff2d55":SEEDER_COLOR;
+      if(spent) ctx.globalAlpha=0.55;
+      polygon(e.x,e.y,4,e.size,col,potatoMode?0:(pan?20:14),e.rot);
+      polygon(e.x,e.y,4,e.size*0.45,spent?"#2a2a2a":"#3a3410",0,-e.rot*1.6);
+      if(pan && !potatoMode){
+        // aro que se abre y se cierra al ritmo del panico: se ve de lejos
+        const pr=0.5+0.5*Math.sin(performance.now()/1000*16);
+        ctx.save();
+        ctx.strokeStyle="rgba(255,45,85,"+(0.3+pr*0.45)+")";
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.arc(e.x,e.y,e.size+7+pr*5,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      const w=30, frac=Math.max(0,e.hp/e.maxHp);
+      ctx.fillStyle="rgba(0,0,0,0.55)";
+      ctx.fillRect(e.x-w/2,e.y+e.size+5,w,3);
+      ctx.fillStyle=col;
+      ctx.fillRect(e.x-w/2,e.y+e.size+5,w*frac,3);
+      ctx.globalAlpha=1;
+    }else if(e.swarm){
+      // rombo chico cian: sin barra de vida, muere de un tiro siempre
+      polygon(e.x,e.y,4,e.size,SWARM_COLOR,potatoMode?0:8,e.rot);
+    }else if(e.thief){
+      // octagono: la unica forma de 8 lados del juego, para que no se confunda
+      // con el rombo del sembrador (que tambien es amarillo). Vacio va apagado;
+      // cargado se prende y lleva el botin escrito encima, que es la unica forma
+      // de saber cuanto te va a costar dejarlo ir.
+      const loaded=e.loot>0;
+      const col=loaded?THIEF_COLOR:THIEF_DIM;
+      polygon(e.x,e.y,8,e.size,col,potatoMode?0:(loaded?20:8),e.rot);
+      polygon(e.x,e.y,8,e.size*0.42,loaded?"#fff6c0":"#2a2a2a",0,-e.rot*1.4);
+      if(loaded){
+        if(!potatoMode){
+          // aro que late: se lee de lejos que ese lleva algo tuyo
+          const pr=0.5+0.5*Math.sin(performance.now()/1000*12);
+          ctx.save();
+          ctx.strokeStyle="rgba(255,233,77,"+(0.3+pr*0.45)+")";
+          ctx.lineWidth=2;
+          ctx.beginPath();
+          ctx.arc(e.x,e.y,e.size+6+pr*5,0,Math.PI*2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.save();
+        ctx.font="900 12px Orbitron, sans-serif";
+        ctx.textAlign="center";
+        ctx.fillStyle=THIEF_COLOR;
+        if(!potatoMode){ ctx.shadowColor=THIEF_COLOR; ctx.shadowBlur=10; }
+        ctx.fillText("+"+e.loot,e.x,e.y-e.size-6);
+        ctx.restore();
+      }
     }else{
       polygon(e.x,e.y,6,e.size,enemyColor(e.maxHp),12);
     }
@@ -3240,7 +4495,37 @@ function drawGameplay(){
 
   if(bossActive && boss){
     drawBossBeam();
-    polygon(boss.x,boss.y,7,boss.size,boss.color,26);
+    drawBossCannons();
+    if(boss.enraged){
+      // en furia late rapido, gira y se pinta de rojo
+      const et=performance.now()/1000;
+      const pr=0.5+0.5*Math.sin(et*9);
+      if(!potatoMode){
+        ctx.save();
+        ctx.strokeStyle="rgba(255,45,85,"+(0.35+pr*0.4)+")";
+        ctx.lineWidth=3;
+        ctx.shadowColor="#ff2d55"; ctx.shadowBlur=24;
+        ctx.beginPath();
+        ctx.arc(boss.x,boss.y,boss.size+8+pr*6,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      polygon(boss.x,boss.y,7,boss.size,"#ff2d55",30,et*1.4);
+    }else{
+      polygon(boss.x,boss.y,7,boss.size,boss.color,26);
+    }
+    drawBossStumps();
+    if(boss.coreFlash>0){
+      // el núcleo se enciende cuando escupe el anillo: sin cañones, el arma
+      // pasa a ser el cuerpo, y hay que verlo cargar
+      ctx.save();
+      if(!potatoMode){ ctx.shadowColor="#ffffff"; ctx.shadowBlur=18; }
+      ctx.fillStyle="rgba(255,255,255,"+(0.12+boss.coreFlash*0.5)+")";
+      ctx.beginPath();
+      ctx.arc(boss.x,boss.y,boss.size*0.3*(1.6-boss.coreFlash*0.6),0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
     if(guardians.length){
       // escudo hexagonal rotando + cables de energía con flujo animado
       const t=performance.now()/1000;
@@ -3314,8 +4599,20 @@ function drawGameplay(){
     ctx.globalAlpha=parpadeo?0.35:1;
     polygon(sh.x,sh.y,3,sh.size*1.35,col,potatoMode?0:12,sh.rot);
     ctx.globalAlpha=1;
+    if(sh.frenzied){
+      // el mismo rojo de la furia del boss, para que se lea como "esto tambien
+      // se contagio" sin inventar un color fuera de la paleta
+      ctx.save();
+      ctx.strokeStyle=potatoMode?"#ff2d55":("rgba(255,45,85,"+(0.5+Math.sin(time*10)*0.35)+")");
+      ctx.lineWidth=potatoMode?2:2.5;
+      if(!potatoMode){ ctx.shadowColor="#ff2d55"; ctx.shadowBlur=10; }
+      ctx.beginPath(); ctx.arc(sh.x,sh.y,sh.size*1.35+6,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
     if(sh.healer && !potatoMode && bossActive && boss){
-      // hilo de curación hacia el boss
+      // hilo de curación hacia el boss. Solo existe mientras el sanador siga
+      // siendo sanador: al entrar el boss en furia se convierte en perseguidor
+      // y el hilo desaparece solo, que es la señal de "la cura se corto".
       ctx.save();
       ctx.strokeStyle="rgba(87,255,161,0.35)";
       ctx.setLineDash([5,7]);
@@ -3366,6 +4663,87 @@ function drawGameplay(){
     ctx.restore();
   }
 
+  // la mira va DESPUES de los enemigos (para no quedar tapada) y ANTES de los
+  // carteles flotantes y la ficha de presentacion, que mandan sobre todo
+  drawDroneLock();
+  drawFloatTexts();
+  drawEnemyIntro();
+}
+
+/* Ficha de presentacion: un cartel atado con una linea al enemigo especial que
+   acaba de entrar por primera vez en la partida, mas un aro que se abre sobre
+   el para que el ojo vaya ahi. Se pone del lado que tenga aire y nunca se sale
+   de pantalla, asi sirve igual en un telefono angosto. Potato: se va el glow
+   (el resto es texto y dos rectangulos, es barato). */
+function drawEnemyIntro(){
+  const f=enemyIntro;
+  if(!f || gameState!=="playing" || f.y<ENEMY_INTRO_ENTER_Y) return;
+  const a=Math.max(0,Math.min(1,(1-f.t)*7,f.t*5)); // entra rapido, se va suave
+  if(a<=0.01) return;
+  ctx.save();
+  ctx.globalAlpha=a;
+  ctx.textBaseline="middle";
+  ctx.font="900 15px 'Orbitron',sans-serif";
+  const wName=ctx.measureText(f.name).width;
+  ctx.font="bold 12px 'Share Tech Mono',monospace";
+  const w=Math.max(wName,ctx.measureText(f.tip).width)+22, h=44;
+  const derecha = f.x < c.width/2; // la ficha va del lado con mas espacio
+  let bx = derecha ? f.x+34 : f.x-34-w;
+  bx = Math.max(8, Math.min(Math.max(8,c.width-w-8), bx));
+  const by = Math.max(74, Math.min(Math.max(74,c.height-h-74), f.y-h/2));
+  ctx.strokeStyle=f.col;
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(f.x,f.y);
+  ctx.lineTo(bx+(derecha?0:w), by+h/2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(f.x,f.y,26+(1-f.t)*10,0,Math.PI*2);
+  ctx.stroke();
+  ctx.fillStyle="rgba(8,2,20,0.88)";
+  ctx.fillRect(bx,by,w,h);
+  if(!potatoMode){ ctx.shadowColor=f.col; ctx.shadowBlur=14; }
+  ctx.lineWidth=2;
+  ctx.strokeRect(bx,by,w,h);
+  ctx.shadowBlur=0;
+  ctx.textAlign="left";
+  ctx.fillStyle=f.col;
+  ctx.font="900 15px 'Orbitron',sans-serif";
+  ctx.fillText(f.name,bx+11,by+15);
+  ctx.fillStyle="rgba(255,255,255,0.82)";
+  ctx.font="bold 12px 'Share Tech Mono',monospace";
+  ctx.fillText(f.tip,bx+11,by+31);
+  ctx.restore();
+  ctx.globalAlpha=1;
+}
+
+/* Carteles flotantes genericos: nacen donde los tira spawnFloatText, suben y
+   se desvanecen. Usado por la cadena de minas y por la ruptura de cañones del
+   boss; cualquier otro funnel de puntaje puede sumarse sin dibujo propio. */
+function drawFloatTexts(){
+  for(const f of floatTexts){
+    const a=Math.min(1,f.t*1.6);
+    const up=(1-f.t)*34;
+    const pop=1+Math.max(0,f.t-0.82)*1.6; // golpe de escala en el primer instante
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.translate(f.x,f.y-up);
+    ctx.scale(pop,pop);
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    if(!potatoMode){ ctx.shadowColor=f.mainColor; ctx.shadowBlur=18; }
+    ctx.fillStyle=f.mainColor;
+    ctx.font="900 26px 'Orbitron',sans-serif";
+    ctx.fillText(f.main,0,0);
+    ctx.shadowBlur=0;
+    if(f.sub){
+      ctx.font="bold 14px 'Share Tech Mono',monospace";
+      ctx.fillStyle=f.subColor;
+      ctx.fillText(f.sub,0,19);
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
 }
 
 function formatTime(t){
@@ -3388,8 +4766,35 @@ function updateHUD(){
     document.getElementById("recordVal").textContent=bestScore;
     if(!beatingRecord){
       beatingRecord=true;
+      recordBadge.classList.remove("is-near");
       recordBadge.classList.add("is-beating");
-      sfxUiBlip(980);
+      document.getElementById("recordTag").textContent="¡RÉCORD!";
+      recordGapEl.textContent="";
+      if(recordAtRunStart>0){
+        // rompiste algo de verdad: destello de borde, patada y fanfarria
+        recordFX=1;
+        addShake(9,0.4);
+        addChrom(0.55);
+        sfxRecordBreak();
+      }else{
+        sfxUiBlip(980); // primera partida de la dificultad: no habia nada que romper
+      }
+    }
+  }else if(!beatingRecord && recordAtRunStart>0){
+    if(!nearRecord && score>=recordAtRunStart*0.9){
+      // te falta menos del 10% para pasar tu récord: la placa se pone rosa y late
+      nearRecord=true;
+      recordBadge.classList.add("is-near");
+      document.getElementById("recordTag").textContent="CASI!";
+      sfxUiBlip(640);
+    }
+    if(nearRecord){
+      // cuenta atras exacta: el pulso solo decia "estas cerca", esto dice cuanto
+      const falta=Math.max(1,recordAtRunStart+1-score);
+      if(falta!==lastRecordGap){
+        lastRecordGap=falta;
+        recordGapEl.textContent="· faltan "+falta;
+      }
     }
   }
   document.getElementById("scoreVal").textContent=score;
@@ -3399,12 +4804,14 @@ function updateHUD(){
   if(bossActive && boss){
     bossBar.classList.remove("hidden");
     const shielded=bossIsShielded();
-    document.getElementById("bossBarName").textContent="BOSS "+(bossesDefeated+1);
+    document.getElementById("bossBarName").textContent="BOSS "+(bossesDefeated+1)+(boss.enraged?" ⚡":"");
     document.getElementById("bossShieldTag").classList.toggle("hidden",!shielded);
-    document.getElementById("bossBarTrack").classList.toggle("shielded",shielded);
+    bossBarTrack.classList.toggle("shielded",shielded);
+    bossBarTrack.classList.toggle("enraged",!!boss.enraged);
     bossBarFill.style.width=Math.max(0,(boss.life/boss.maxLife*100))+"%";
   }else{
     bossBar.classList.add("hidden");
+    bossBarTrack.classList.remove("enraged");
   }
 
   const chips=[];
@@ -3414,6 +4821,10 @@ function updateHUD(){
     chips.push(buffChip("⚡","<span class='chip-time'>"+speedBoostTimer.toFixed(1)+"s</span>","",speedBoostTimer/(POWERUP_SPEED_DURATION*derived.buffDurationMult)));
   if(score2xTimer>0)
     chips.push(buffChip("×2","<span class='chip-time'>"+score2xTimer.toFixed(1)+"s</span>","",score2xTimer/(POWERUP_SCORE2X_DURATION*derived.buffDurationMult)));
+  if(slowmoTimer>0)
+    chips.push(buffChip("◐","<span class='chip-time'>"+slowmoTimer.toFixed(1)+"s</span>","",slowmoTimer/(POWERUP_SLOWMO_DURATION*derived.buffDurationMult)));
+  if(comboGuardTimer>0)
+    chips.push(buffChip("◈","RACHA <span class='chip-time'>"+comboGuardTimer.toFixed(1)+"s</span>","is-guard",comboGuardTimer/(POWERUP_GUARD_DURATION*derived.buffDurationMult)));
 
   if(derived.qAbilityUnlocked){
     if(qCooldown>0){
@@ -3447,8 +4858,45 @@ function circleHit(ax,ay,ar,bx,by,br){
   return Math.hypot(ax-bx,ay-by) < (ar+br);
 }
 
+// Un golpe chico no pisa a uno grande: se queda el temblor mas fuerte que siga activo.
+function addShake(mag,dur){
+  if(potatoMode) mag*=0.5;
+  mag=Math.min(MAX_SHAKE,mag);
+  if(mag <= shakeMag*(shakeT/Math.max(shakeT0,1e-4))) return;
+  shakeMag=mag; shakeT=dur; shakeT0=dur;
+}
+// Congela la simulacion unas milesimas para que el impacto "pegue". Tope corto: nunca se siente lag.
+function addHitStop(dur){ hitStopT=Math.min(0.09,Math.max(hitStopT,dur)); }
+// Pulso de aberracion cromatica (0..1). En potato no hace nada: el efecto redibuja la pantalla entera.
+function addChrom(v){ if(potatoMode) return; chromAb=Math.max(chromAb,v); }
+// Destello de borde con el color de lo ultimo que mataste. A diferencia de
+// addChrom/addShake no toma el maximo: cada kill de la cadena pisa el color
+// del anterior a proposito, asi el marco siempre cuenta que fue lo ULTIMO que
+// caiste, no una mezcla. Se llama seguido (cada kill de una racha), por eso es
+// barato incluso en potato (ver drawKillEdgeFlash).
+function addEdgeFlash(color){ edgeFlashColor=color; edgeFlashT=1; }
+// Congela el mundo (loop() se salta updateGameplay mientras dura, igual que el
+// hitstop pero mas largo) y agranda la silueta del boss en su ultima pose antes
+// de que reviente: la fanfarria que faltaba en la muerte de boss, hasta ahora
+// solo un burst de particulas igual que cualquier enemigo comun. Se llama con
+// el boss TODAVIA vivo, justo antes de registerKill/anular la referencia.
+// En potato no hace nada: el boss revienta directo, como era antes de esto.
+function triggerBossDeathFreeze(b){
+  if(potatoMode) return;
+  bossDeathFX=1;
+  bossDeathX=b.x; bossDeathY=b.y; bossDeathSize=b.size;
+  bossDeathColor=b.enraged?"#ff2d55":b.color;
+  bossDeathRot=b.enraged?(performance.now()/1000)*1.4:0;
+}
+// Cartel flotante generico: nace en (x,y), sube y se desvanece. Cualquier funnel
+// de puntaje/kill puede tirar el suyo sin inventar su propio estado ni dibujo.
+function spawnFloatText(x,y,main,mainColor,sub,subColor){
+  floatTexts.push({x,y,main,mainColor,sub,subColor,t:1});
+}
+
 function explode(x,y,n=20){
   sfxExplosion(n>40);
+  addShake(Math.min(9,1+n*0.11), Math.min(0.28,0.05+n*0.005));
   if(potatoMode) n=Math.max(3,Math.round(n*0.35));
   for(let i=0;i<n;i++){
     particles.push({x,y,dx:(Math.random()-0.5)*6,dy:(Math.random()-0.5)*6,life:30});
@@ -3457,10 +4905,22 @@ function explode(x,y,n=20){
 
 function currentScoreMult(){ return (score2xTimer>0?2:1)*derived.scoreMult*diff().scoreMult; }
 
-function registerKill(x,y,baseScore,mult,particleCount=20){
+function registerKill(x,y,baseScore,mult,particleCount=20,color=null){
   explode(x,y,particleCount);
+  // muertes grandes (bosses) suman patada extra y un respiro de hitstop
+  if(particleCount>=50){ addShake(16,0.6); addHitStop(0.08); addChrom(0.9); }
   enemiesKilled++;
-  score+=Math.round(baseScore*mult);
+  comboKills++;
+  if(comboKills>bestComboKills) bestComboKills=comboKills;
+  comboTimer=COMBO_WINDOW;
+  comboPulse=1;
+  // ping ascendente cada 5 kills, cuando sube un escalon del multiplicador
+  if(comboKills%5===0) sfxUiBlip(680+Math.min(comboKills,45)*7);
+  // destello de borde SOLO a partir de la 2da baja de la cadena: una kill
+  // suelta ya tiene su propio feedback (explosion, hitstop); el marco de
+  // color es la marca de que estas en racha, no de que mataste algo.
+  if(comboKills>=2 && color) addEdgeFlash(color);
+  score+=Math.round(baseScore*mult*comboMult());
 }
 
 function rollDamage(){
@@ -3474,14 +4934,33 @@ function takeDamage(x,y,amount=1,pierceShield=false){
     shieldCharge--;
     invul=0.6;
     explode(x,y,14);
+    addShake(6,0.22); addHitStop(0.035);
     sfxShieldBreak();
     if(derived.shieldRecharge) shieldRechargeTimer=derived.shieldRechargeTime;
     return;
   }
   lives-=amount;
   invul=derived.invulDuration;
+  if(comboGuardTimer>0 && comboKills>0){
+    // el seguro de racha: pagas la vida igual, pero la cadena NO se corta. Se
+    // gasta de una (se pone en 0), asi que aguanta UN golpe y no seis segundos
+    // de descuido. Ademas se reinicia la ventana: si el golpe te dejo lejos de
+    // todo, no perdes la racha por los 2.5s que tardas en volver a tiro.
+    comboGuardTimer=0;
+    comboGuardFlash=1;
+    comboTimer=COMBO_WINDOW;
+    sfxGuardSave();
+    spawnFloatText(player.x,player.y-player.size-16,"RACHA SALVADA","#ff2fb0","×"+comboMult().toFixed(1)+" sigue","#ffb9e6");
+  }else{
+    comboKills=0; comboTimer=0; // un golpe de verdad corta la racha
+  }
   if(derived.shieldRecharge) shieldRechargeTimer=derived.shieldRechargeTime;
   explode(x,y,amount>1?34:20);
+  // recibir dano propio pega mas fuerte que cualquier explosion ajena
+  addShake(amount>1?16:11, amount>1?0.45:0.34);
+  addHitStop(amount>1?0.08:0.055);
+  hurtFlash=1;
+  addChrom(amount>1?1:0.7);
   sfxHurt();
   if(lives<=0){
     if(secondChanceUsesLeft>0){
@@ -3504,9 +4983,11 @@ function fireBullets(){
       const t=count>1?(k/(count-1)-0.5):0;
       const angle=t*spread;
       bullets.push({x:player.x,y:player.y,dx:Math.sin(angle)*8,dy:-Math.cos(angle)*8,pierce});
+      shotsFired++;
     }
   }else{
     bullets.push({x:player.x,y:player.y,dx:0,dy:-8,pierce});
+    shotsFired++;
   }
 }
 
@@ -3528,22 +5009,64 @@ function updateBossBeam(){
   if(boss.beamState==="charging"){
     // mientras carga sigue al jugador
     boss.beamAngle=Math.atan2(player.y-boss.y,player.x-boss.x);
-    if(boss.beamTimer<=0){ boss.beamState="locked"; boss.beamTimer=BEAM_LOCK; }
+    if(boss.beamTimer<=0){
+      boss.beamState="locked";
+      armBeamSweep();
+      boss.beamTimer=boss.beamSweeping?BEAM_SWEEP_LOCK:BEAM_LOCK;
+    }
     return;
   }
   if(boss.beamState==="locked"){
     // angulo congelado: acá es donde el jugador tiene que salirse de la linea
-    if(boss.beamTimer<=0){ boss.beamState="firing"; boss.beamTimer=BEAM_FIRE; sfxBeamFire(); }
+    // (o de todo el cono, si el boss esta en furia y esto es un barrido)
+    if(boss.beamTimer<=0){
+      boss.beamState="firing";
+      boss.beamTimer=beamFireLen();
+      sfxBeamFire(boss.beamSweeping);
+    }
     return;
   }
   if(boss.beamState==="firing"){
+    if(boss.beamSweeping){
+      // el angulo se recalcula por PROGRESO (no se acumula frame a frame) para
+      // que la compuerta de frames del tiempo lento no lo desincronice del reloj
+      const p=1-Math.max(0,boss.beamTimer)/BEAM_SWEEP_FIRE;
+      boss.beamAngle=boss.beamSweepFrom+boss.beamSweepDir*BEAM_SWEEP_ARC*p;
+    }
     if(!boss.beamHit && invul<=0 && playerInBeam()){
-      boss.beamHit=true; // un solo impacto por disparo
+      boss.beamHit=true; // un solo impacto por disparo, barrido incluido
       takeDamage(player.x,player.y,BEAM_DAMAGE);
       if(gameState!=="playing") return;
     }
     if(boss.beamTimer<=0){ boss.beamState="idle"; boss.beamTimer=BEAM_COOLDOWN; }
   }
+}
+
+function beamFireLen(){ return boss.beamSweeping?BEAM_SWEEP_FIRE:BEAM_FIRE; }
+
+/* Decide, en el momento de trabar el angulo, si este disparo es un barrido.
+   Solo en furia: fuera de la segunda fase el rayo sigue siendo exactamente el
+   de siempre (linea fija, BEAM_FIRE, mismo dibujo, mismo sonido).
+   Hacia donde gira: hacia la PARED QUE EL JUGADOR TIENE MAS CERCA. O sea que
+   nace del lado abierto, te rastrilla por encima y termina metiendose en tu
+   rincon. Dos cosas salen de eso, y las dos importan:
+   - la fuga (meterse por detras del arranque, contra el giro) va SIEMPRE hacia
+     el centro abierto, donde hay lugar de sobra. Al reves -- barrer hacia el
+     centro -- deja al que esta pegado a una pared sin ningun lado a donde ir, o
+     sea un golpe garantizado, que es lo peor que puede hacer un ataque.
+   - el barrido termina justo donde el jugador se estaba escondiendo. El rayo
+     clavado premiaba quedarse quieto en un rincon; este te saca de ahi. */
+function armBeamSweep(){
+  boss.beamSweeping=!!boss.enraged;
+  if(!boss.beamSweeping) return;
+  // angulo creciente = hacia la izquierda de la pantalla (x decreciente)
+  boss.beamSweepDir = player.x < c.width/2 ? 1 : -1;
+  // el arranque, en px perpendiculares, pasado a angulo con la distancia real
+  // (tope de 1/4 de arco para que a quemarropa no se coma medio barrido)
+  const dist=Math.max(60,Math.hypot(player.x-boss.x,player.y-boss.y));
+  const back=Math.min(BEAM_SWEEP_ARC*0.25, Math.atan(BEAM_SWEEP_BACK_PX/dist));
+  boss.beamSweepFrom = boss.beamAngle - boss.beamSweepDir*back;
+  boss.beamAngle = boss.beamSweepFrom; // el aviso muestra donde NACE, no donde trabo
 }
 
 function playerInBeam(){
@@ -3554,6 +5077,31 @@ function playerInBeam(){
   if(proj<0) return false; // esta detras del boss
   const perp=Math.abs(px*dy-py*dx);
   return perp < BEAM_HALF_WIDTH+PLAYER_HIT_RADIUS;
+}
+
+/* Cono del barrido, de `a1` a `a2` visto desde el boss. Se usa dos veces:
+   completo y latiendo mientras avisa (el jugador ve TODO lo que va a quemar
+   antes del primer frame de daño) y como estela de lo ya barrido mientras
+   dispara. Potato: se va el relleno, quedan los dos bordes -- alcanzan para
+   leer el peligro y no hay que pintar media pantalla por frame. */
+function drawBeamCone(a1,a2,fill,edge){
+  const len=Math.hypot(c.width,c.height)*1.2;
+  const lo=Math.min(a1,a2), hi=Math.max(a1,a2);
+  if(!potatoMode){
+    ctx.beginPath();
+    ctx.moveTo(boss.x,boss.y);
+    ctx.arc(boss.x,boss.y,len,lo,hi);
+    ctx.closePath();
+    ctx.fillStyle=fill;
+    ctx.fill();
+  }
+  ctx.strokeStyle=edge;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(boss.x+Math.cos(lo)*len,boss.y+Math.sin(lo)*len);
+  ctx.lineTo(boss.x,boss.y);
+  ctx.lineTo(boss.x+Math.cos(hi)*len,boss.y+Math.sin(hi)*len);
+  ctx.stroke();
 }
 
 function drawBossBeam(){
@@ -3568,12 +5116,23 @@ function drawBossBeam(){
     ctx.lineWidth=2;
     ctx.setLineDash([14,10]);
   }else if(boss.beamState==="locked"){
+    if(boss.beamSweeping){
+      // todo el cono, latiendo: "esto entero se quema, salite para el otro lado"
+      const pulse=0.10+0.06*Math.sin(boss.beamTimer*26);
+      drawBeamCone(boss.beamSweepFrom,boss.beamSweepFrom+boss.beamSweepDir*BEAM_SWEEP_ARC,
+                   "rgba(255,45,85,"+pulse+")","rgba(255,70,110,0.55)");
+    }
     // parpadeo rapido: es el aviso de "salite ya"
     const on=Math.floor(boss.beamTimer*20)%2===0;
     ctx.strokeStyle=on?"rgba(255,255,255,0.95)":"rgba(255,70,110,0.7)";
     ctx.lineWidth=4;
   }else{
-    const p=Math.max(0,boss.beamTimer/BEAM_FIRE);
+    const p=Math.max(0,boss.beamTimer/beamFireLen());
+    if(boss.beamSweeping){
+      // estela de lo ya barrido, se apaga con lo que queda de disparo
+      drawBeamCone(boss.beamSweepFrom,boss.beamAngle,
+                   "rgba(255,45,85,"+(0.05+p*0.10)+")","rgba(255,70,110,0.22)");
+    }
     if(!potatoMode){ ctx.shadowColor="#ff2d55"; ctx.shadowBlur=26; }
     ctx.strokeStyle="rgba(255,45,85,"+(0.55+p*0.4)+")";
     ctx.lineWidth=BEAM_HALF_WIDTH*2;
@@ -3585,10 +5144,81 @@ function drawBossBeam(){
   ctx.restore();
 }
 
+/* Punto sobre el eje de un cañón, a `out` px por fuera de su base. Se recalcula
+   en cada uso porque el boss se mueve todo el tiempo. */
+function cannonAt(k,out){
+  const r=boss.size*CANNON_MOUNT+out;
+  return {x:boss.x+Math.cos(k.ang)*r, y:boss.y+Math.sin(k.ang)*r};
+}
+function liveCannons(){ return boss&&boss.cannons ? boss.cannons.filter(k=>k.hp>0) : []; }
+
+/* Se dibuja ANTES del cuerpo, asi las bases quedan tapadas por el polígono y los
+   caños se leen como montados sobre el casco. El caño oscuro de fondo es el largo
+   total y el pintado encima es la vida que le queda: el cañón se va consumiendo
+   desde la punta, sin necesidad de una barra extra. */
+function drawBossCannons(){
+  if(!boss.cannons) return;
+  ctx.save();
+  ctx.lineCap="round";
+  boss.cannons.forEach(k=>{
+    if(k.hp<=0) return; // los muñones van en drawBossStumps, encima del cuerpo
+    const b0=cannonAt(k,-2), b1=cannonAt(k,CANNON_LEN);
+    const frac=Math.max(0,Math.min(1,k.hp/k.maxHp));
+    const tip=cannonAt(k,-2+(CANNON_LEN+2)*frac);
+    ctx.strokeStyle="rgba(38,34,56,0.95)";
+    ctx.lineWidth=9;
+    ctx.beginPath(); ctx.moveTo(b0.x,b0.y); ctx.lineTo(b1.x,b1.y); ctx.stroke();
+    if(!potatoMode){ ctx.shadowColor=boss.color; ctx.shadowBlur=10; }
+    ctx.strokeStyle = k.hit>0 ? "#ffffff" : (boss.enraged?"#ff2d55":boss.color);
+    ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(b0.x,b0.y); ctx.lineTo(tip.x,tip.y); ctx.stroke();
+    ctx.shadowBlur=0;
+    if(k.flash>0){
+      // fogonazo en la boca: dice qué cañón tiró cada línea
+      ctx.fillStyle="rgba(255,255,255,"+(0.25+k.flash*0.6)+")";
+      ctx.beginPath(); ctx.arc(b1.x,b1.y,2.5+k.flash*4,0,Math.PI*2); ctx.fill();
+    }
+  });
+  ctx.restore();
+}
+
+/* Los muñones se dibujan DESPUES del cuerpo: si van antes, el polígono del boss
+   (que llega mas lejos que la base del cañón) y su glow se los comen enteros y
+   volarle un cañón no se nota. Encima del casco, en cambio, el hueco negro con
+   la brasa se lee de lejos: es el marcador de progreso de la pelea. */
+function drawBossStumps(){
+  if(!boss.cannons) return;
+  const rotos=boss.cannons.filter(k=>k.hp<=0);
+  if(!rotos.length) return;
+  ctx.save();
+  ctx.lineCap="round";
+  const pu=potatoMode?0:(0.5+0.5*Math.sin(performance.now()/230));
+  rotos.forEach(k=>{
+    const b0=cannonAt(k,-4), b1=cannonAt(k,9);
+    ctx.strokeStyle="rgba(46,40,64,0.98)";
+    ctx.lineWidth=8;
+    ctx.beginPath(); ctx.moveTo(b0.x,b0.y); ctx.lineTo(b1.x,b1.y); ctx.stroke();
+    if(!potatoMode){
+      // brasa: el cañón sigue humeando donde estaba
+      ctx.fillStyle="rgba(255,45,85,"+(0.3+pu*0.45)+")";
+      ctx.beginPath(); ctx.arc(b1.x,b1.y,1.6+pu*1.4,0,Math.PI*2); ctx.fill();
+    }
+  });
+  ctx.restore();
+}
+
 function spawnBoss(){
   const tier=Math.min(bossesDefeated,6);
   const bossNumber=bossesDefeated+1;
-  const life=Math.min(900,75*bossNumber); // +75 por boss, tope 900
+  // el boss escalaba SOLO por cantidad de bosses vencidos, nunca por
+  // dificultad: en experto (enemigos ×2 vida y ×2 velocidad) el mismo boss
+  // que en facil llegaba igual de blando y igual de lento, asi que la pelea
+  // de boss era la unica parte del juego que no notaba en que dificultad
+  // estabas. Ahora vida y velocidad usan los mismos multiplicadores que ya
+  // usa cualquier enemigo comun (`diff().enemyHpMult`/`enemySpeedMult`, mas
+  // `derived.enemySpeedMult` para que los nodos "Enemigos más lentos" del
+  // arbol tambien alcancen al boss, como ya alcanzan a todo lo demas).
+  const life=Math.round(Math.min(900,75*bossNumber)*diff().enemyHpMult); // +75 por boss, tope 900
   const size=60+tier*4;
   // targetY mas arriba: antes quedaba un hueco entre el boss y el borde
   // superior donde el jugador se escondia sin poder ser alcanzado
@@ -3596,20 +5226,34 @@ function spawnBoss(){
     x:c.width/2,y:-100,targetY:size+22,
     life,maxLife:life,dir:1,enter:true,
     fireCD:Math.max(0.25,0.6-tier*0.08),
-    moveSpeed:2+tier*0.3,
+    moveSpeed:(2+tier*0.3)*derived.enemySpeedMult*diff().enemySpeedMult,
     size, hitRadius:size*Math.cos(Math.PI/7),
     color:bossColor(tier),
     shotLines:bossShotLines(bossNumber),
+    // fase de furia: se activa una sola vez al bajar del 30% de vida
+    enraged:false, volley:0,
     // el rayo se desbloquea a partir del boss 5
     hasBeam:bossNumber>=5,
-    beamState:"idle", beamTimer:BEAM_COOLDOWN, beamAngle:Math.PI/2, beamHit:false
+    beamState:"idle", beamTimer:BEAM_COOLDOWN, beamAngle:Math.PI/2, beamHit:false,
+    // barrido: solo se arma en furia, se decide al trabar el angulo
+    beamSweeping:false, beamSweepDir:1, beamSweepFrom:Math.PI/2
   };
+  // un cañón por línea del abanico. El `t` de cada uno es exactamente el offset
+  // que esa línea ya usaba, asi que con todos vivos el patrón de tiro es
+  // idéntico al de siempre: lo único nuevo es de dónde sale cada bala.
+  boss.cannons=[];
+  boss.coreFlash=0;
+  const chp=Math.round(cannonHp(tier)*diff().enemyHpMult);
+  for(let k=0;k<boss.shotLines;k++){
+    const ct=(boss.shotLines>1)?(k/(boss.shotLines-1)-0.5):0;
+    boss.cannons.push({t:ct, ang:Math.PI/2+ct*CANNON_SPREAD, hp:chp, maxHp:chp, hit:0, flash:0});
+  }
   bossActive=true;
   // a partir del 3er boss aparecen guardianes que lo blindan: mientras
   // siga vivo alguno, el boss no recibe daño. Desde el 5to son 3.
   guardians=[];
   if(bossesDefeated>=2){
-    const gLife=Math.round((20+tier*8)*1.2); // +20% de vida
+    const gLife=Math.round((20+tier*8)*1.2*diff().enemyHpMult); // +20% de vida, mas la dificultad
     const slots = bossesDefeated>=4
       ? [{dx:-230,dy:0},{dx:230,dy:0},{dx:0,dy:105}]
       : [{dx:-160,dy:0},{dx:160,dy:0}];
@@ -3631,15 +5275,29 @@ const SHARD_IMMUNE=0.3;        // gracia para que no mueran en el mismo disparo
 const SHARD_HEAL_PCT=0.01;     // el sanador cura 1% de la vida máxima...
 const SHARD_HEAL_INTERVAL=0.5; // ...cada medio segundo, de forma continua
 const SHARD_STUN=0.5;          // aturdimiento que aplican los perseguidores
+/* Contagio de furia. Cuando el boss entra en su segunda fase, los fragmentos
+   que quedaron dando vueltas se contagian: los perseguidores aceleran y el
+   SANADOR suelta el botiquin y se suma a la cacería.
+   Por que convertir al sanador en vez de hacerlo curar mas rapido: el sanador
+   ya cura 1% de la vida maxima cada 0.5s = 2%/s, y el jugador base dispara cada
+   0.3s por 1 de daño (~3.3 dps) contra un boss 3 de 225 de vida = 4.5 hp/s de
+   cura. O sea que acelerarlo garantizaba un empate eterno justo en el tramo
+   final, que es lo mas injusto que puede pasar. Convirtiendolo, la furia SUBE la
+   presion (un perseguidor mas, todos mas rapidos) y a la vez destraba la pelea. */
+const SHARD_FRENZY_SPEED=1.6;  // furia del boss: los perseguidores van 60% mas rapido
 
 function spawnGuardianShards(g){
   // 0.45 sale de igualar áreas: 3 triángulos ≈ el pentágono del guardián
   const size=Math.round(g.size*0.45);
   const hp=Math.max(6,Math.round(g.maxHp/3));
+  // si el boss YA esta en furia, los fragmentos nacen contagiados (y sin
+  // sanador): el estado no se puede "esquivar" matando al guardian tarde.
+  const born=!!(boss&&boss.enraged);
   for(let k=0;k<3;k++){
     const a=(Math.PI*2/3)*k - Math.PI/2;
     shards.push({
-      healer:k===2,
+      healer:k===2&&!born,
+      frenzied:born,
       x:g.x+Math.cos(a)*g.size*0.6,
       y:g.y+Math.sin(a)*g.size*0.6,
       size, hp, maxHp:hp,
@@ -3662,6 +5320,54 @@ function bossWarning(){
   setTimeout(()=>bossMsgEl.style.display="none",3000);
 }
 
+/* Segunda fase del boss: al bajar del 30% de vida se vuelve loco. Se mueve y
+   dispara mucho mas seguido, el abanico pasa a apuntarte y cada 3 rafagas tira
+   un anillo completo que obliga a reposicionarse (no solo a esquivar). */
+function enrageBoss(){
+  boss.enraged=true;
+  boss.moveSpeed*=1.7;
+  boss.fireCD=Math.max(0.13,boss.fireCD*0.5);
+  boss.volley=0;
+  bossCD=Math.min(bossCD,0.35); // castigo casi inmediato al entrar en furia
+  if(boss.hasBeam && boss.beamState==="idle") boss.beamTimer=Math.min(boss.beamTimer,0.7);
+  // CONTAGIO: los guardianes ya estan muertos a esta altura (el escudo bloquea
+  // todo el daño mientras quede alguno vivo, asi que la vida no puede bajar del
+  // 30% con guardianes en pie) pero sus fragmentos siguen sueltos — el sanador
+  // sobre todo, que no muere solo. Hasta hoy el tramo final de la pelea tenia al
+  // boss transformado y a sus fragmentos haciendo exactamente lo mismo de antes.
+  let converted=0;
+  shards.forEach(sh=>{
+    sh.frenzied=true;
+    if(sh.healer){
+      // suelta el botiquin y se suma a la cacería
+      sh.healer=false; sh.orbit=null; converted++;
+    }
+    if(!potatoMode){
+      for(let k=0;k<8;k++){
+        const a=(Math.PI*2/8)*k;
+        particles.push({x:sh.x,y:sh.y,dx:Math.cos(a)*2.6,dy:Math.sin(a)*2.6,life:20});
+      }
+    }
+  });
+  if(converted) sfxShardTurn();
+  bossMsgEl.textContent="⚠ FURIA ⚠";
+  bossMsgEl.classList.add("furia");
+  bossMsgEl.style.display="block";
+  setTimeout(()=>{ bossMsgEl.style.display="none"; bossMsgEl.classList.remove("furia"); },1800);
+  bossBarTrack.classList.add("enraged");
+  sfxAlarm();
+  sfxEnrage();
+  addShake(16,0.5);
+  addHitStop(0.07);
+  addChrom(1);
+  if(!potatoMode){
+    for(let k=0;k<26;k++){
+      const a=(Math.PI*2/26)*k;
+      particles.push({x:boss.x,y:boss.y,dx:Math.cos(a)*4,dy:Math.sin(a)*4,life:30});
+    }
+  }
+}
+
 function spawnKamikaze(){
   // enemigo suicida: ignora el patron de descenso y persigue al jugador
   enemies.push({
@@ -3673,9 +5379,347 @@ function spawnKamikaze(){
   });
 }
 
+function spawnSplitter(){
+  // enemigo divisor: baja lento, no dispara, pero al morir suelta dos crias
+  const tier=DIFF_ENEMY_TIER[difficultyLevel()];
+  const hp=Math.max(2,Math.round(SPLITTER_HP*diff().enemyHpMult));
+  enemies.push({
+    splitter:true,
+    x:40+Math.random()*(c.width-80), y:-20,
+    size:20, speed:(1.4+tier*0.2)*derived.enemySpeedMult*diff().enemySpeedMult,
+    cd:Infinity, fireCD:Infinity,
+    hp:hp, maxHp:hp
+  });
+}
+
+function splitEnemy(e){
+  // se parte en dos crias chicas que se abren hacia los lados mientras caen
+  for(let k=0;k<2;k++){
+    const dir=k===0?-1:1;
+    const sp=1.9+Math.random()*0.7;
+    enemies.push({
+      splitChild:true,
+      x:e.x, y:e.y, size:10, rot:0,
+      vx:dir*sp, vy:1.5+Math.random()*0.6,
+      cd:Infinity, fireCD:Infinity,
+      hp:1, maxHp:1
+    });
+  }
+  sfxSplit();
+}
+
+function spawnSeeder(){
+  // sembrador: baja lento zigzagueando, no dispara, va dejando minas
+  const tier=DIFF_ENEMY_TIER[difficultyLevel()];
+  const hp=Math.max(3,Math.round(SEEDER_HP*diff().enemyHpMult));
+  enemies.push({
+    seeder:true,
+    x:80+Math.random()*(c.width-160), y:-20,
+    sway:1.1+Math.random()*0.5, swayPhase:Math.random()*Math.PI*2,
+    size:19, speed:(1.5+tier*0.15)*derived.enemySpeedMult*diff().enemySpeedMult,
+    rot:0, mineCD:0.9, cd:Infinity, fireCD:Infinity,
+    // estado de la reaccion a la Q: panic (huyendo y soltando), spent (agotado),
+    // panicDrops (cuantas le quedan por soltar) y panicSide (para donde se raja)
+    panic:0, spent:0, panicDrops:0, panicSide:1,
+    hp:hp, maxHp:hp
+  });
+}
+
+function spawnBlocker(){
+  // bloqueador: baja lento con el escudo apuntando hacia el jugador
+  const tier=DIFF_ENEMY_TIER[difficultyLevel()];
+  const hp=Math.max(3,Math.round(BLOCKER_HP*diff().enemyHpMult));
+  const cd=BLOCKER_FIRE_CD*derived.enemyFireCDMult;
+  enemies.push({
+    blocker:true,
+    x:60+Math.random()*Math.max(40,c.width-120), y:-24,
+    size:24, speed:(1.2+tier*0.15)*derived.enemySpeedMult*diff().enemySpeedMult,
+    // arranca mirando para abajo y desde ahi corrige: si lo agarras apenas
+    // entra, todavia no te apunto y le llegas de costado sin pelear el angulo
+    face:Math.PI/2, sFlash:0,
+    cd:cd, fireCD:cd,
+    hp:hp, maxHp:hp
+  });
+}
+
+function spawnSwarm(){
+  // enjambre: 5 integrantes en cuña, cada uno con 1hp fijo (no escala con la
+  // dificultad: la velocidad y el tejido ya son la amenaza). Comparten fase
+  // (t0) y centro (baseX), asi tejen el mismo serpenteo en sincronia perfecta;
+  // cada uno solo suma su offset fijo de formacion encima de ese centro.
+  const tier=DIFF_ENEMY_TIER[difficultyLevel()];
+  const speed=(3.4+tier*0.25)*derived.enemySpeedMult*diff().enemySpeedMult;
+  // mitad del ancho total que puede llegar a ocupar la cuña tejiendo: el ala mas
+  // lejos de la formacion, mas la amplitud del serpenteo, mas el cuerpo. Si la
+  // pantalla es mas angosta que eso, la cuña arranca centrada y se sale un poco
+  // por los costados en vez de nacer entera fuera de cuadro.
+  const half=44+SWARM_WEAVE_AMP+SWARM_SIZE;
+  const room=c.width-half*2;
+  const baseX = room>0 ? half+Math.random()*room : c.width/2;
+  const t0=Math.random()*Math.PI*2;
+  for(const off of SWARM_FORMATION){
+    enemies.push({
+      swarm:true,
+      x:baseX+off.x, y:-20-off.y,
+      offX:off.x, baseX, swarmT:t0,
+      size:SWARM_SIZE, speed, rot:0,
+      cd:Infinity, fireCD:Infinity,
+      hp:1, maxHp:1
+    });
+  }
+}
+
+function spawnThief(){
+  // La velocidad de BAJADA escala con la dificultad como la de cualquier otro
+  // enemigo, pero la de FUGA no: la ventana para cazarlo tiene que durar lo
+  // mismo en las 3 dificultades. Si en experto la fuga fuera al doble, el robo
+  // seria irreversible y el ladron dejaria de ser una decision para pasar a ser
+  // un impuesto. Lo que si la toca es `derived.enemySpeedMult` (los nodos de
+  // "Enemigos más lentos" del arbol), asi que esa rama tambien sirve para
+  // alcanzarlo.
+  const hp=Math.max(2,Math.round(THIEF_HP*diff().enemyHpMult));
+  enemies.push({
+    thief:true, loot:0, fleeing:false, wobble:Math.random()*Math.PI*2,
+    x:40+Math.random()*Math.max(40,c.width-80), y:-20,
+    size:16, rot:0,
+    speed:THIEF_DIVE*derived.enemySpeedMult*diff().enemySpeedMult,
+    fleeSpeed:THIEF_FLEE*derived.enemySpeedMult,
+    cd:Infinity, fireCD:Infinity,
+    hp:hp, maxHp:hp
+  });
+}
+
+/* El robo NO pasa por `takeDamage`: es el unico contacto del juego que no te
+   saca vida. Por eso tampoco lo tapa el escudo del arbol ni la invulnerabilidad
+   (no hay daño que tapar) y la racha no se corta — lo que esta en juego es el
+   marcador, no la partida. */
+function thiefSteal(e){
+  e.fleeing=true;
+  e.wobble=Math.random()*Math.PI*2;
+  const loot=Math.min(score,Math.max(THIEF_STEAL_MIN,Math.round(score*THIEF_STEAL_PCT)));
+  if(loot<=0) return; // no tenias nada encima: se va con las manos vacias
+  e.loot=loot;
+  score=Math.max(0,score-loot);
+  addShake(7,0.3);
+  addChrom(0.5);
+  sfxThiefSteal();
+  spawnFloatText(e.x,e.y-e.size-14,"-"+loot,"#ff2d55","te lo lleva","#ffb0c0");
+}
+
+function thiefEscape(e){
+  // se fue por arriba con el botin y eso no vuelve. El cartel va pegado al
+  // borde de arriba porque el ladron ya salio de pantalla.
+  if(e.loot<=0) return;
+  sfxThiefEscape();
+  spawnFloatText(
+    Math.max(70,Math.min(c.width-70,e.x)),46,
+    "SE FUE CON "+e.loot,"#ff2d55","cazalo la proxima","#ffb0c0"
+  );
+}
+
+/* El escudo es una cuña SOLIDA centrada en `face` (del centro hasta el arco),
+   no una cascara fina: asi ninguna bala rapida se cuela entre dos frames. Todo
+   lo que entra por ahi rebota, incluidas las balas que iban a un enemigo de mas
+   atras — eso es lo que lo convierte en cobertura movil y no en un tanque mas. */
+function blockerBlocks(e,bx,by){
+  const dx=bx-e.x, dy=by-e.y;
+  const R=e.size+BLOCKER_SHIELD_R;
+  if(dx*dx+dy*dy>R*R) return false;
+  const a=Math.atan2(dy,dx)-e.face;
+  return Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<=BLOCKER_ARC;
+}
+
+/* embudo unico para lo que deja atras un enemigo comun al morir, sea por bala,
+   dron, onda Q o estallido de mina. Antes cada punto de muerte repetia el
+   `if(e.splitter) splitEnemy(e)` suelto. */
+function onCommonEnemyDeath(e){
+  if(e.splitter) splitEnemy(e);
+  else if(e.seeder) dropDeathMine(e.x,e.y);
+  else if(e.thief && e.loot>0){
+    // el botin vuelve solo, por `enemyKillScore`: como pasa por el
+    // multiplicador de racha, cazarlo paga MAS que lo que te habia sacado.
+    // Aca queda unicamente el cartel, y reusa la fanfarria de premio que ya
+    // existia para la cadena de minas.
+    spawnFloatText(e.x,e.y-e.size-12,"RECUPERASTE","#ffe94d","+"+e.loot+" robados","#00f6ff");
+    sfxChainBonus(4);
+  }
+}
+
+/* Puntos y tamaño del reventon segun el tipo de enemigo comun. Antes los 4
+   puntos de muerte (bala, dron, onda Q, mina) repetian `e.kamikaze?60:10` a
+   mano y el del dron ni siquiera lo hacia: pagaba 10 por un kamikaze. */
+function enemyKillScore(e){ return e.kamikaze?60 : e.blocker?BLOCKER_SCORE : e.swarm?SWARM_SCORE : e.thief?(THIEF_SCORE+(e.loot||0)) : 10; }
+function enemyKillFx(e){ return e.kamikaze?32 : e.blocker?26 : e.swarm?10 : e.thief?24 : 20; }
+// Color para el destello de borde de `registerKill`: el mismo color con el que
+// cada tipo se dibuja (ver `enemies.forEach` en `drawGameplay`), asi el marco
+// nunca inventa una paleta nueva. Los comunes usan `enemyColor(maxHp)`, que ya
+// varia con la vida del bicho (mas rojo = mas debil).
+function enemyKillColor(e){
+  if(e.kamikaze) return KAMIKAZE_COLOR;
+  if(e.blocker) return BLOCKER_COLOR;
+  if(e.swarm) return SWARM_COLOR;
+  if(e.thief) return THIEF_COLOR;
+  if(e.splitter||e.splitChild) return SPLITTER_COLOR;
+  if(e.seeder) return SEEDER_COLOR;
+  return enemyColor(e.maxHp);
+}
+
+function dropMine(x,y){
+  if(mines.length>=MINE_MAX) return;
+  mines.push({x,y,arm:MINE_ARM_TIME,fuse:0,life:MINE_LIFETIME,r:6,chain:0});
+  sfxMineDrop();
+}
+
+/* La onda Q le vuela el campo minado al sembrador: los que sobreviven (los que
+   estaban FUERA del radio, porque adentro la Q los mata sola con qDamage)
+   entran en panico. Se llama UNA vez desde triggerShockwave y solo si el
+   barrido agarro por lo menos una mina: si la Q no toco nada, no hay nada a lo
+   que reaccionar. Los que ya estaban en panico o agotados no se reinician:
+   asi dos Q seguidas no lo dejan soltando minas para siempre. */
+function panicSeeders(){
+  let n=0;
+  for(const e of enemies){
+    if(!e.seeder || e.panic>0 || e.spent>0) continue;
+    e.panic=SEEDER_PANIC_TIME;
+    e.panicDrops=SEEDER_PANIC_DROPS;
+    e.mineCD=0.12;                                  // el primero sale casi de una
+    // se raja para el lado contrario al jugador, salvo que de ese lado no le
+    // quede cancha: contra la pared la huida se leia como una carga de frente
+    const away=e.x<player.x?-1:1;
+    const room=away<0?e.x:c.width-e.x;
+    e.panicSide=room<90?-away:away;
+    n++;
+  }
+  if(n>0) sfxSeederPanic();
+}
+
+function dropDeathMine(x,y){
+  // el sembrador se lleva puesto su ultimo huevo: ya armado y sin periodo inerte.
+  // matarlo encima tuyo tiene precio, pero te deja la mecha (MINE_FUSE) para salir.
+  if(mines.length>=MINE_MAX) mines.shift();
+  mines.push({x,y,arm:0,fuse:0,life:MINE_LIFETIME*0.6,r:6,chain:0});
+  sfxMineDrop();
+}
+
+function detonateMine(m,i,chain=0){
+  const k=Math.min(chain,MINE_CHAIN_MAX);
+  // mas particulas cuanto mas fuerte pega el estallido (nodo dmg33): el ojo
+  // capta la mejora aunque el jugador no haya mirado el arbol en un rato
+  const boostFx=(derived.mineBlastDamage-MINE_BLAST_DMG)*3;
+  explode(m.x,m.y,potatoMode?10:22+boostFx);
+  sfxMineBlast(chain);
+  addShake(Math.min(9+k*1.6,16),0.26); addChrom(Math.min(0.5+k*0.1,1));
+  // guarda el radio de cadena de ESTE momento (no el de MINE_CHAIN_R fijo) para
+  // poder dibujar el aro fantasma en drawMines aunque el jugador compre el
+  // nodo a mitad de partida
+  mineBlasts.push({x:m.x,y:m.y,t:1,chain:k,friendly:mineGrace>0,chainR:derived.mineChainR}); // onda para leer el radio del estallido
+  mines.splice(i,1);
+
+  // se suma a la cadena en curso; si no estalla nada mas por MINE_CHAIN_WINDOW,
+  // updateMines la cierra y paga el bonus donde estuvo el centro del reventon
+  mineChainN++; mineChainX+=m.x; mineChainY+=m.y;
+  mineChainT=MINE_CHAIN_WINDOW;
+
+  // el estallido no distingue bandos: barre a los enemigos comunes que agarra.
+  // asi el campo minado deja de ser solo una trampa y pasa a ser un arma:
+  // dejas que bajen sobre las minas y encendes una de un tiro.
+  const mult=currentScoreMult();
+  for(let j=enemies.length-1;j>=0;j--){
+    const e=enemies[j];
+    if(!circleHit(e.x,e.y,e.size*ENEMY_HIT_SCALE,m.x,m.y,derived.mineBlastR)) continue;
+    e.hp-=derived.mineBlastDamage;
+    if(e.hp<=0){
+      registerKill(e.x,e.y,enemyKillScore(e),mult,enemyKillFx(e),enemyKillColor(e));
+      onCommonEnemyDeath(e);
+      enemies.splice(j,1);
+    }else{
+      explode(e.x,e.y,6);
+    }
+  }
+
+  // reaccion en cadena: las minas vecinas encienden mecha corta (incluso las
+  // que todavia estaban inertes). No es recursion: se resuelven en updateMines.
+  for(const o of mines){
+    if(o.fuse>0) continue;
+    if(Math.hypot(o.x-m.x,o.y-m.y)>derived.mineChainR) continue;
+    o.arm=0;
+    o.fuse=MINE_CHAIN_FUSE;
+    o.chain=chain+1;
+  }
+
+  if(mineGrace<=0 && circleHit(player.x,player.y,PLAYER_HIT_RADIUS,m.x,m.y,derived.mineBlastR) && invul<=0){
+    takeDamage(player.x,player.y);
+  }
+}
+
+function closeMineChain(){
+  const n=mineChainN;
+  const cx=mineChainX/n, cy=mineChainY/n;
+  mineChainN=0; mineChainX=0; mineChainY=0;
+  if(n<MINE_CHAIN_MIN) return;
+  const nn=Math.min(n,10); // el bonus deja de crecer a las 10: no se rompe con un campo lleno
+  const pts=Math.round(MINE_CHAIN_SCORE*nn*(nn-2)*currentScoreMult()*comboMult());
+  score+=pts;
+  const col=n>=6?"#ff2d55":"#ffe94d";
+  spawnFloatText(cx,cy,"CADENA ×"+n,col,"+"+pts,"#00f6ff");
+  sfxChainBonus(n);
+}
+
+/* Aca vive SOLO el ciclo de vida de las minas (armado, mecha, detonacion, la
+   ventana de la cadena): todo eso es mundo y corre a ritmo de mundo. Las ondas
+   de estallido y los carteles flotantes se fueron al bloque de FX de
+   updateGameplay, que corre todos los frames. */
+function updateMines(){
+  if(mineGrace>0) mineGrace-=1/60;
+  if(mineChainN>0){
+    mineChainT-=1/60;
+    if(mineChainT<=0) closeMineChain();
+  }
+  for(let i=mines.length-1;i>=0;i--){
+    const m=mines[i];
+    if(m.arm>0){ m.arm-=1/60; continue; }
+    m.life-=1/60;
+    if(m.life<=0){ mines.splice(i,1); continue; }
+    if(m.fuse>0){
+      m.fuse-=1/60;
+      if(m.fuse<=0){ detonateMine(m,i,m.chain||0); continue; }
+    }else if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,m.x,m.y,MINE_TRIGGER_R)){
+      m.fuse=MINE_FUSE;
+      sfxMineArm();
+    }
+  }
+}
+
+/* Engancha la ficha de presentacion al bicho que se acaba de crear. `back` dice
+   cuantos se pusieron en el array de una (el enjambre entra de a 5, y ahi la
+   ficha va en la punta de la cuña, que es la que se lee como lider).
+   Si ya hay una ficha en pantalla NO se marca como visto: el tipo se presenta
+   solo, en el proximo que aparezca, en vez de comerse el turno de otro. */
+function announceEnemy(key,back=1){
+  const m=ENEMY_INTRO[key];
+  if(!m || enemyIntro || introSeen.has(key)) return;
+  const e=enemies[enemies.length-back];
+  if(!e) return;
+  introSeen.add(key);
+  enemyIntro={key, ref:e, x:e.x, y:e.y, t:1, name:m.name, tip:m.tip, col:m.col};
+}
+
 function spawnEnemy(){
   // desde el nivel 3 de dificultad (4:30), 1 de cada 5 enemigos es un kamikaze
-  if(difficultyLevel()>=3 && Math.random()<0.20){ spawnKamikaze(); return; }
+  if(difficultyLevel()>=3 && Math.random()<0.20){ spawnKamikaze(); announceEnemy("kamikaze"); return; }
+  // desde el nivel 2 (3:00), 1 de cada 8 es un sembrador de minas
+  if(difficultyLevel()>=2 && Math.random()<0.12){ spawnSeeder(); announceEnemy("seeder"); return; }
+  // desde el nivel 2 (3:00), 1 de cada 7 es un divisor
+  if(difficultyLevel()>=2 && Math.random()<0.14){ spawnSplitter(); announceEnemy("splitter"); return; }
+  // desde el nivel 2, 1 de cada 10 tandas es un enjambre de 5 en formacion
+  if(difficultyLevel()>=2 && Math.random()<0.10){ spawnSwarm(); announceEnemy("swarm",SWARM_FORMATION.length); return; }
+  // el ladron entra en el nivel 1, pero SOLO si hay marcador para robar: sin
+  // botin no tiene ninguna amenaza que ofrecer y seria un enemigo comun lento
+  if(difficultyLevel()>=1 && score>=THIEF_MIN_SCORE && Math.random()<0.10){ spawnThief(); announceEnemy("thief"); return; }
+  // el bloqueador entra ya en el nivel 1 y va ULTIMO a proposito: cuando recien
+  // aparece es el unico especial (13% limpio, se aprende solo), y mas adelante
+  // los otros tres se quedan con su tajada primero y el baja a ~8%
+  if(difficultyLevel()>=1 && Math.random()<0.13){ spawnBlocker(); announceEnemy("blocker"); return; }
   const tier=DIFF_ENEMY_TIER[difficultyLevel()];
   const hp=Math.max(1,Math.round((1+tier)*diff().enemyHpMult));
   enemies.push({
@@ -3720,6 +5764,15 @@ function applyPowerup(type){
   else if(type==="multishot") multishotTimer=POWERUP_MULTISHOT_DURATION*derived.buffDurationMult;
   else if(type==="speed") speedBoostTimer=POWERUP_SPEED_DURATION*derived.buffDurationMult;
   else if(type==="score2x") score2xTimer=POWERUP_SCORE2X_DURATION*derived.buffDurationMult;
+  else if(type==="slowmo"){ slowmoTimer=POWERUP_SLOWMO_DURATION*derived.buffDurationMult; slowAccum=0; sfxSlowmo(); }
+  else if(type==="guard"){
+    comboGuardTimer=POWERUP_GUARD_DURATION*derived.buffDurationMult;
+    comboGuardFlash=1;
+    sfxGuard();
+    // los otros 5 power-ups se explican solos (mas balas, mas rapido, el mundo
+    // frena). Este es invisible hasta que te pegan, asi que dice lo que hace.
+    spawnFloatText(player.x,player.y-player.size-16,"RACHA BLINDADA","#ff2fb0","aguanta un golpe","#ffb9e6");
+  }
 }
 
 function triggerShockwave(){
@@ -3735,8 +5788,8 @@ function triggerShockwave(){
     if(!inRange(e.x,e.y)) continue;
     e.hp-=derived.qDamage;
     if(e.hp<=0){
-      registerKill(e.x,e.y,e.kamikaze?60:10,mult,e.kamikaze?32:20);
-      enemiesKilled++;
+      registerKill(e.x,e.y,enemyKillScore(e),mult,enemyKillFx(e),enemyKillColor(e));
+      onCommonEnemyDeath(e);
       enemies.splice(i,1);
     }else{
       explode(e.x,e.y,6);
@@ -3747,6 +5800,26 @@ function triggerShockwave(){
   for(let i=enemyBullets.length-1;i>=0;i--){
     const b=enemyBullets[i];
     if(inRange(b.x,b.y)) enemyBullets.splice(i,1);
+  }
+
+  // la onda Q ya no APAGA las minas que toca: las DETONA. Cada una recibe una
+  // mecha proporcional a su distancia, asi que revientan JUSTO cuando el anillo
+  // celeste les pasa por encima, de adentro hacia afuera. `mineGrace` cubre al
+  // jugador de sus propios estallidos (la onda ya lo protege), pero los enemigos
+  // parados sobre el campo minado se comen todo: onda + estallidos + cadena.
+  // Sinergia con el sembrador: dejas que bajen sobre las minas y soltas la Q.
+  let qMines=0;
+  for(const m of mines){
+    if(!inRange(m.x,m.y)) continue;
+    const d=Math.hypot(m.x-player.x,m.y-player.y);
+    const t=Math.min(Q_MINE_SWEEP,(d/Math.max(1,R))*Q_MINE_SWEEP);
+    m.arm=0;
+    if(m.fuse<=0 || t<m.fuse){ m.fuse=Math.max(0.02,t); m.chain=Math.round(d/Math.max(1,R)*3); }
+    qMines++;
+  }
+  if(qMines>0){
+    mineGrace=Math.max(mineGrace,Q_MINE_SWEEP+0.5); // sweep + la cadena que dispare
+    panicSeeders(); // el que planto todo eso lo ve volar y reacciona
   }
 
   // fragmentos dentro del radio
@@ -3781,7 +5854,8 @@ function triggerShockwave(){
     boss.life-=derived.qBossDamage;
     explode(boss.x,boss.y,20);
     if(boss.life<=0){
-      registerKill(boss.x,boss.y,250,mult,60);
+      triggerBossDeathFreeze(boss);
+      registerKill(boss.x,boss.y,250,mult,60,boss.color);
       bossActive=false; boss=null; guardians=[]; shards=[];
       bossesDefeated++;
       if(derived.lifePerBoss>0) lives+=derived.lifePerBoss;
@@ -3796,6 +5870,7 @@ function triggerShockwave(){
   }
   if(derived.qShieldOnUse) invul=Math.max(invul,1);
   shockwaveFX=1;
+  addShake(8,0.3);
   sfxShockwave();
 }
 
@@ -3818,27 +5893,57 @@ function triggerDrone(){
   sfxDrone();
 }
 
-function findDroneTarget(){
+/* Bono (o castigo) de amenaza de cada tipo de blanco. La regla que ordena todo
+   esto es una sola: el dron dispara a lo que MAS CAMBIA si muere, y no gasta
+   bateria en lo que igual se muere de un tiro tuyo ni en lo que no puede
+   terminar.
+   Boss y guardianes quedan en CERO a proposito: ahi no hay nada que
+   desperdiciar, cada punto de daño es una barra de vida que estas bajando. */
+function dronePriorityBonus(t){
+  // el ladron VACIO es un enemigo comun mas; cargado es lo unico en toda la
+  // pantalla que se esta llevando algo que ya era tuyo, y con un reloj corriendo
+  if(t.thief) return t.loot>0 ? DRONE_PRI_THIEF : 0;
+  if(t.seeder) return DRONE_PRI_SEEDER;
+  // el bloqueador es el caso mas lindo: su escudo frontal para tus balas pero
+  // NO el laser del dron, asi que el dron es literalmente la respuesta al
+  // enemigo que te tapa el angulo
+  if(t.blocker) return DRONE_PRI_BLOCKER;
+  // el kamikaze aguanta 50 (100 en experto) y una bateria entera de dron le
+  // saca 8: esa esponja se esquiva o se la comen tus balas, no el laser
+  if(t.kamikaze) return -DRONE_PEN_TANK;
+  // enjambre, crias del divisor y comunes del arranque: 1 de vida
+  if(t.maxHp<=1) return -DRONE_PEN_TRIVIAL;
+  return 0;
+}
+
+/* Distancia EFECTIVA al jugador: la real menos el bono del tipo. Devolver una
+   distancia falsa (y no un ranking aparte) es lo que mantiene el desempate
+   natural: un sembrador a 200px le gana a una cria a 100px, pero entre dos
+   sembradores gana el que tenes encima. */
+function droneTargetCost(t){
+  return Math.hypot(t.x-player.x,t.y-player.y)-dronePriorityBonus(t);
+}
+
+// `exclude` es para el segundo blanco (nodo Doble Objetivo): busca el mejor
+// costo IGNORANDO al que ya eligio el primer disparo, asi las dos balas del
+// dron nunca caen sobre el mismo bicho.
+function findDroneTarget(exclude){
   let target=null, best=Infinity;
-  const dx0=player.x, dy0=player.y;
-  enemies.forEach(e=>{
-    const dist=Math.hypot(e.x-dx0,e.y-dy0);
-    if(dist<best){ best=dist; target=e; }
-  });
-  guardians.forEach(g=>{
-    const dist=Math.hypot(g.x-dx0,g.y-dy0);
-    if(dist<best){ best=dist; target=g; }
-  });
+  const consider=t=>{
+    if(t===exclude) return;
+    const cost=droneTargetCost(t);
+    if(cost<best){ best=cost; target=t; }
+  };
+  enemies.forEach(consider);
+  guardians.forEach(consider);
   // el boss escudado no es objetivo valido: primero hay que bajar guardianes
-  if(bossActive && boss && !bossIsShielded()){
-    const dist=Math.hypot(boss.x-dx0,boss.y-dy0);
-    if(dist<best){ target=boss; }
-  }
+  if(bossActive && boss && !bossIsShielded()) consider(boss);
   return target;
 }
 
 function awardDroneBossDefeat(){
-  registerKill(boss.x,boss.y,250,currentScoreMult(),60);
+  triggerBossDeathFreeze(boss);
+  registerKill(boss.x,boss.y,250,currentScoreMult(),60,boss.color);
   bossActive=false; boss=null; guardians=[]; shards=[];
   bossesDefeated++;
       if(derived.lifePerBoss>0) lives+=derived.lifePerBoss;
@@ -3851,21 +5956,15 @@ function awardDroneBossDefeat(){
   }
 }
 
-function updateDrone(){
-  droneTarget=null;
-  if(droneBeamTimer>0) droneBeamTimer=Math.max(0,droneBeamTimer-1/60);
-  if(droneTimer<=0) return;
-  droneTimer=Math.max(0,droneTimer-1/60);
-  droneFireTimer-=1/60;
-  const target=findDroneTarget();
-  droneTarget=target;
-  if(!target || droneFireTimer>0) return;
-  droneFireTimer=derived.droneFireInterval;
-
+// Le pega a UN blanco: mueve el rayo (slot 1 o 2, cada uno con sus propias
+// vars de beam) y aplica el daño/muerte. Se separo de updateDrone para que
+// el segundo disparo de Doble Objetivo use EXACTAMENTE la misma logica de
+// impacto que el primero, sin copiar el switch boss/guardian/enemigo.
+function droneStrike(target,slot){
   const dx=Math.min(c.width-24,player.x+43), dy=Math.max(24,player.y-40);
-  droneBeamFrom={x:dx,y:dy};
-  droneBeamTo={x:target.x,y:target.y};
-  droneBeamTimer=0.12;
+  const from={x:dx,y:dy}, to={x:target.x,y:target.y};
+  if(slot===2){ droneBeamFrom2=from; droneBeamTo2=to; droneBeamTimer2=0.12; }
+  else{ droneBeamFrom=from; droneBeamTo=to; droneBeamTimer=0.12; }
 
   if(target===boss){
     boss.life-=derived.droneDamage;
@@ -3881,8 +5980,9 @@ function updateDrone(){
         score+=Math.round(40*currentScoreMult());
         if(guardians.length===0) sfxShieldBreak();
       }else{
-        registerKill(target.x,target.y,10,currentScoreMult());
+        registerKill(target.x,target.y,enemyKillScore(target),currentScoreMult(),enemyKillFx(target),enemyKillColor(target));
         const index=enemies.indexOf(target);
+        onCommonEnemyDeath(target);
         if(index>=0) enemies.splice(index,1);
       }
     }else{
@@ -3891,16 +5991,86 @@ function updateDrone(){
   }
 }
 
+function updateDrone(){
+  droneTarget=null; droneTarget2=null;
+  if(droneBeamTimer>0) droneBeamTimer=Math.max(0,droneBeamTimer-1/60);
+  if(droneBeamTimer2>0) droneBeamTimer2=Math.max(0,droneBeamTimer2-1/60);
+  if(droneTimer<=0) return;
+  droneTimer=Math.max(0,droneTimer-1/60);
+  droneFireTimer-=1/60;
+  const target=findDroneTarget();
+  droneTarget=target;
+  // el segundo blanco solo se BUSCA si hay primero: sin nada cerca no hay
+  // nada que excluir, y mostrar una mira roja sin disparo real mentiria
+  const target2=(target && derived.droneDualTarget) ? findDroneTarget(target) : null;
+  droneTarget2=target2;
+  if(!target || droneFireTimer>0) return;
+  droneFireTimer=derived.droneFireInterval;
+  droneStrike(target,1);
+  // target2 es un objeto DISTINTO de target (findDroneTarget lo excluyo a
+  // proposito), asi que aunque el primer strike lo haya matado/splice-ado no
+  // pisa el indexOf que hace el segundo strike sobre sus propios arrays
+  if(target2) droneStrike(target2,2);
+}
+
 function updateGameplay(){
   time+=1/60; // el tiempo nunca se detiene ni se reinicia
   shootCD-=1/60; invul-=1/60; bossCD-=1/60;
   if(multishotTimer>0) multishotTimer=Math.max(0,multishotTimer-1/60);
   if(speedBoostTimer>0) speedBoostTimer=Math.max(0,speedBoostTimer-1/60);
   if(score2xTimer>0) score2xTimer=Math.max(0,score2xTimer-1/60);
+  // el seguro de racha corre en tiempo real, igual que los otros buffs del
+  // jugador, y su destello se apaga aunque el seguro ya se haya gastado
+  if(comboGuardTimer>0) comboGuardTimer=Math.max(0,comboGuardTimer-1/60);
+  if(comboGuardFlash>0) comboGuardFlash=Math.max(0,comboGuardFlash-1/60/GUARD_FLASH_TIME);
+  // tiempo lento: cuenta en tiempo REAL (no se ralentiza a si mismo). Mientras
+  // corre, worldStep vale true 1 frame de cada 2 => el bloque "mundo enemigo"
+  // avanza a la mitad y el jugador se mueve/dispara a velocidad normal.
+  // fxSlow es la otra mitad de la misma idea: todo lo que se dibuja moviendose
+  // (balas enemigas, particulas, ondas, el anillo de la Q) corre TODOS los
+  // frames pero a media velocidad, asi la camara lenta se ve lenta y no a saltos.
+  let worldStep=true;
+  if(slowmoTimer>0){
+    slowmoTimer=Math.max(0,slowmoTimer-1/60);
+    slowAccum+=SLOWMO_WORLD_RATE;
+    if(slowAccum>=1){ slowAccum-=1; worldStep=true; } else worldStep=false;
+    fxSlow=SLOWMO_WORLD_RATE;
+  }else{
+    slowAccum=0;
+    fxSlow=1;
+  }
+  // la racha no se congela sola, pero mientras el tiempo lento esta activo el
+  // mundo enemigo casi no avanza: dejar que comboTimer siga en tiempo real
+  // cortaba rachas "gratis" durante tu propia ventana de panico.
+  if(comboTimer>0 && slowmoTimer<=0){ comboTimer=Math.max(0,comboTimer-1/60); if(comboTimer===0) comboKills=0; }
+  if(comboPulse>0) comboPulse=Math.max(0,comboPulse-1/60/0.25);
+  // ficha de presentacion: mientras el bicho viva lo sigue; si lo matas antes
+  // de terminar de leer, la ficha se queda clavada donde estaba y se apaga sola
+  if(enemyIntro){
+    const r=enemyIntro.ref;
+    if(r && enemies.includes(r)){ enemyIntro.x=r.x; enemyIntro.y=r.y; }
+    else enemyIntro.ref=null;
+    // los enemigos nacen arriba del borde: la ficha espera a que el suyo entre
+    // en pantalla, si no el cartel sale apuntando a un pedazo de cielo vacio
+    const esperando=enemyIntro.y<ENEMY_INTRO_ENTER_Y;
+    if(esperando && !enemyIntro.ref){
+      // lo mataron sin que llegara a asomarse: se cancela y el tipo vuelve a la
+      // fila, asi se presenta en serio con el proximo que aparezca
+      introSeen.delete(enemyIntro.key);
+      enemyIntro=null;
+    }else if(!esperando){
+      if(enemyIntro.t===1) sfxUiBlip(760); // recien ahora se ve: ahi suena
+      enemyIntro.t=Math.max(0,enemyIntro.t-1/60/ENEMY_INTRO_TIME);
+      if(enemyIntro.t<=0) enemyIntro=null;
+    }
+  }
   if(qCooldown>0) qCooldown=Math.max(0,qCooldown-1/60);
   if(stunTimer>0) stunTimer=Math.max(0,stunTimer-1/60);
   if(droneCooldown>0) droneCooldown=Math.max(0,droneCooldown-1/60);
-  if(shockwaveFX>0) shockwaveFX=Math.max(0,shockwaveFX-1/60/0.6);
+  // el anillo de la Q tambien se abre en camara lenta. Si no, durante el slowmo
+  // se adelantaba a las minas que va prendiendo (que corren a ritmo de mundo) y
+  // el barrido dejaba de leerse como una onda encendiendo el campo minado
+  if(shockwaveFX>0) shockwaveFX=Math.max(0,shockwaveFX-(1/60/0.6)*fxSlow);
   // el escudo recupera de a UNA capa cada shieldRechargeTime segundos sin
   // recibir daño; cualquier golpe reinicia la cuenta
   if(derived.shieldEnabled && derived.shieldRecharge && shieldCharge<derived.shieldCharges){
@@ -3946,6 +6116,7 @@ function updateGameplay(){
         const sh=shards[j];
         if(sh.immune>0) continue; // todavia intangible
         if(circleHit(sh.x,sh.y,sh.size,b.x,b.y,derived.bulletHitRadius)){
+          if(!b.hit){ b.hit=true; shotsHit++; }
           sh.hp-=rollDamage();
           consumed=true;
           if(sh.hp<=0){
@@ -3965,6 +6136,7 @@ function updateGameplay(){
       for(let j=guardians.length-1;j>=0;j--){
         const g=guardians[j];
         if(circleHit(g.x,g.y,g.size*ENEMY_HIT_SCALE,b.x,b.y,derived.bulletHitRadius)){
+          if(!b.hit){ b.hit=true; shotsHit++; }
           g.hp-=rollDamage();
           consumed=true;
           if(g.hp<=0){
@@ -3981,15 +6153,50 @@ function updateGameplay(){
       }
     }
 
+    // los cañones se comen la bala ANTES que el cuerpo: apuntarles lo desarma,
+    // tirar por el hueco entre medio es lo que le baja la vida. Con guardianes
+    // vivos no reciben daño (la bala sigue de largo y rebota contra el escudo).
+    if(!consumed && bossActive && boss && boss.cannons && !bossIsShielded()){
+      for(let j=0;j<boss.cannons.length;j++){
+        const cn=boss.cannons[j];
+        if(cn.hp<=0) continue;
+        const p=cannonAt(cn,CANNON_LEN*0.45);
+        if(!circleHit(p.x,p.y,CANNON_R,b.x,b.y,derived.bulletHitRadius)) continue;
+        if(!b.hit){ b.hit=true; shotsHit++; }
+        cn.hp-=rollDamage();
+        cn.hit=1;
+        consumed=true;
+        if(cn.hp<=0){
+          explode(p.x,p.y,16);
+          sfxCannonBreak();
+          // el boss compensa: menos lineas de fuego, pero mas seguido
+          boss.fireCD=Math.max(CANNON_CD_FLOOR,boss.fireCD*CANNON_CD_MULT);
+          const cpts=Math.round(CANNON_SCORE*currentScoreMult());
+          score+=cpts;
+          if(!liveCannons().length){
+            addShake(12,0.4); addChrom(0.6);
+            spawnFloatText(p.x,p.y,"NÚCLEO EXPUESTO","#ff2d55","+"+cpts,"#00f6ff");
+          }else{
+            spawnFloatText(p.x,p.y,"CAÑÓN ABAJO",boss.color,"+"+cpts,"#00f6ff");
+          }
+        }else{
+          explode(p.x,p.y,4);
+        }
+        break;
+      }
+    }
+
     if(!consumed && bossActive && boss && circleHit(boss.x,boss.y,boss.hitRadius,b.x,b.y,derived.bulletHitRadius)){
       consumed=true;
+      if(!b.hit){ b.hit=true; shotsHit++; }
       if(bossIsShielded()){
         // rebota contra el escudo: no hace daño hasta matar a los guardianes
         explode(b.x,b.y,3);
       }else{
         boss.life-=rollDamage();
         if(boss.life<=0){
-          registerKill(boss.x,boss.y,250,currentScoreMult(),60);
+          triggerBossDeathFreeze(boss);
+          registerKill(boss.x,boss.y,250,currentScoreMult(),60,boss.color);
           bossActive=false; boss=null; guardians=[]; shards=[];
           bossesDefeated++;
       if(derived.lifePerBoss>0) lives+=derived.lifePerBoss;
@@ -4003,13 +6210,31 @@ function updateGameplay(){
         }
       }
     }
+    // el escudo del bloqueador se come la bala ANTES que cualquier cuerpo, asi
+    // que tambien tapa a los enemigos que tenga detras. No cuenta como impacto
+    // (no toca `shotsHit`): tirarle de frente es fallar, y la precision lo dice.
+    // Ignora el `pierce`: una bala perforante tampoco pasa.
+    if(!consumed){
+      for(let j=0;j<enemies.length;j++){
+        const e=enemies[j];
+        if(!e.blocker || !blockerBlocks(e,b.x,b.y)) continue;
+        if(e.sFlash<0.5) sfxBlock(); // el flash decae en 0.18s: hace de throttle con multishot
+        e.sFlash=1;
+        explode(b.x,b.y,3);
+        consumed=true;
+        break;
+      }
+    }
+
     if(!consumed){
       for(let j=enemies.length-1;j>=0;j--){
         const e=enemies[j];
         if(circleHit(e.x,e.y,e.size*ENEMY_HIT_SCALE,b.x,b.y,derived.bulletHitRadius)){
+          if(!b.hit){ b.hit=true; shotsHit++; }
           e.hp-=rollDamage();
           if(e.hp<=0){
-            registerKill(e.x,e.y,e.kamikaze?60:10,currentScoreMult(),e.kamikaze?32:20);
+            registerKill(e.x,e.y,enemyKillScore(e),currentScoreMult(),enemyKillFx(e),enemyKillColor(e));
+            onCommonEnemyDeath(e);
             enemies.splice(j,1);
           }else{
             explode(e.x,e.y,6);
@@ -4021,8 +6246,33 @@ function updateGameplay(){
         }
       }
     }
+    // las minas se pueden reventar de un tiro antes de que exploten
+    if(!consumed){
+      for(let j=mines.length-1;j>=0;j--){
+        const m=mines[j];
+        if(circleHit(m.x,m.y,m.arm>0?9:14,b.x,b.y,derived.bulletHitRadius)){
+          if(!b.hit){ b.hit=true; shotsHit++; }
+          detonateMine(m,j);
+          score+=Math.round(5*currentScoreMult());
+          if((b.pierce||0)>0){ b.pierce--; }
+          else{ consumed=true; }
+          break;
+        }
+      }
+    }
     if(consumed || b.y<-20 || b.x<-20 || b.x>c.width+20) bullets.splice(i,1);
   }
+
+  // ==== MUNDO ENEMIGO ====
+  // Con el power-up de tiempo lento activo, worldStep es false 1 frame de cada 2
+  // y este bloque entero (enemigos, minas, boss, guardianes y fragmentos) se
+  // saltea ese frame: los enemigos van a la mitad, el jugador no. Son cuerpos
+  // lentos y grandes: saltear un frame no se les nota. Las balas enemigas SI se
+  // notaban, asi que se mudaron abajo del bloque y van con fxSlow.
+  // El contenido queda con la sangria de siempre a proposito, para no re-indentar
+  // ~240 lineas por un wrapper; el `break slowWorld` es el unico salto a la etiqueta.
+  slowWorld: {
+  if(!worldStep) break slowWorld;
 
   // enemigos
   for(let i=enemies.length-1;i>=0;i--){
@@ -4061,6 +6311,135 @@ function updateGameplay(){
       continue; // no dispara ni se descarta por salir de pantalla
     }
 
+    if(e.splitChild){
+      // cria del divisor: vuela en diagonal, acelera un poco hacia abajo
+      e.x+=e.vx; e.y+=e.vy;
+      e.vy+=0.045;
+      e.rot=Math.atan2(e.vy,e.vx)+Math.PI/2;
+      if(e.y>c.height+30 || e.x<-30 || e.x>c.width+30){ enemies.splice(i,1); continue; }
+      if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,e.x,e.y,e.size*ENEMY_HIT_SCALE) && invul<=0){
+        explode(e.x,e.y,16);
+        enemies.splice(i,1);
+        takeDamage(player.x,player.y);
+        if(gameState!=="playing") return;
+      }
+      continue;
+    }
+
+    if(e.seeder){
+      // baja lento zigzagueando y va sembrando minas. Tres estados: normal,
+      // PANICO (se raja de costado soltando todo) y AGOTADO (lento y sin sembrar)
+      if(e.panic>0){
+        e.panic-=1/60;
+        e.swayPhase+=0.14;                       // tiembla en vez de mecerse
+        e.y+=e.speed*SEEDER_PANIC_DIVE;          // casi no baja: la fuga es horizontal
+        e.x+=e.panicSide*SEEDER_PANIC_SIDE+Math.cos(e.swayPhase)*e.sway;
+        e.rot+=0.16;                             // el nucleo gira desbocado
+        // si llega a la pared rebota para el otro lado en vez de quedarse clavado
+        if(e.x<e.size||e.x>c.width-e.size) e.panicSide*=-1;
+        if(e.panic<=0){ e.panic=0; e.spent=SEEDER_SPENT_TIME; e.panicDrops=0; }
+      }else if(e.spent>0){
+        e.spent-=1/60;
+        e.y+=e.speed*SEEDER_SPENT_SPEED;         // a media maquina: es tu ventana
+        e.rot+=0.008;
+        if(e.spent<=0){ e.spent=0; e.mineCD=1.2; } // se recupera y vuelve a sembrar
+      }else{
+        e.swayPhase+=0.045;
+        e.y+=e.speed;
+        e.x+=Math.cos(e.swayPhase)*e.sway;
+        e.rot+=0.03;
+      }
+      e.x=Math.max(e.size,Math.min(c.width-e.size,e.x));
+      // agotado no siembra nada; en panico suelta rapido hasta vaciarse
+      if(e.spent<=0){
+        e.mineCD-=1/60;
+        if(e.mineCD<=0 && e.y>10 && e.y<c.height-40){
+          if(e.panic>0 && e.panicDrops>0){
+            dropMine(e.x,e.y);
+            e.panicDrops--;
+            e.mineCD=SEEDER_PANIC_CD;
+          }else if(e.panic<=0){
+            dropMine(e.x,e.y);
+            e.mineCD=1.9+Math.random()*0.5;
+          }else{
+            e.mineCD=0.3; // ya solto todo lo que tenia: espera a que pase el panico
+          }
+        }
+      }
+      if(e.y>c.height+30){ enemies.splice(i,1); continue; }
+      if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,e.x,e.y,e.size*ENEMY_HIT_SCALE) && invul<=0){
+        takeDamage(player.x,player.y);
+        if(gameState!=="playing") return;
+      }
+      continue;
+    }
+
+    if(e.blocker){
+      // gira el escudo hacia el jugador, pero con TECHO de velocidad angular:
+      // moviendote de costado le ganas el angulo y le queda el flanco abierto
+      const want=Math.atan2(player.y-e.y,player.x-e.x);
+      const da=Math.atan2(Math.sin(want-e.face),Math.cos(want-e.face));
+      e.face+=Math.max(-BLOCKER_TURN,Math.min(BLOCKER_TURN,da));
+      e.y+=e.speed;
+      if(e.sFlash>0) e.sFlash-=1/60/0.18;
+      e.cd-=1/60;
+      if(e.cd<=0 && e.y>0){
+        // dispara por donde mira: el escudo telegrafia el tiro
+        const ox=Math.cos(e.face), oy=Math.sin(e.face), r=e.size+BLOCKER_SHIELD_R;
+        enemyBullets.push({
+          x:e.x+ox*r, y:e.y+oy*r,
+          dx:ox*BLOCKER_BULLET_SPEED, dy:oy*BLOCKER_BULLET_SPEED
+        });
+        e.cd=e.fireCD;
+      }
+      if(e.y>c.height+34){ enemies.splice(i,1); continue; }
+      if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,e.x,e.y,e.size*ENEMY_HIT_SCALE) && invul<=0){
+        takeDamage(player.x,player.y);
+        if(gameState!=="playing") return;
+      }
+      continue;
+    }
+
+    if(e.thief){
+      if(e.fleeing){
+        // se va por arriba serpenteando: esta es la ventana para recuperar el
+        // botin. Rebota contra los costados en vez de irse de cuadro de lado,
+        // asi la unica salida que tiene es el borde de arriba.
+        e.wobble+=0.12;
+        e.y-=e.fleeSpeed;
+        e.x=Math.max(e.size,Math.min(c.width-e.size,e.x+Math.cos(e.wobble)*THIEF_WEAVE));
+        e.rot+=0.14;
+        if(e.y<-30){ thiefEscape(e); enemies.splice(i,1); }
+        continue;
+      }
+      // baja derecho corrigiendo despacio hacia vos: te busca, pero se esquiva
+      e.y+=e.speed;
+      e.x+=Math.max(-THIEF_TRACK,Math.min(THIEF_TRACK,(player.x-e.x)*0.02));
+      e.rot+=0.07;
+      if(e.y>c.height+30){ enemies.splice(i,1); continue; }
+      // sin guarda de `invul`: el robo no es daño, asi que no hay nada que
+      // hacer con la inmunidad. Tampoco puede terminar la partida, por eso no
+      // hace falta el `if(gameState!=="playing") return` del resto de las ramas.
+      if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,e.x,e.y,e.size*ENEMY_HIT_SCALE)) thiefSteal(e);
+      continue;
+    }
+
+    if(e.swarm){
+      // teje el mismo serpenteo que el resto del enjambre (fase y centro
+      // compartidos) y le suma su offset fijo de formacion; cae en linea recta
+      // en Y asi la cuña nunca se deforma
+      e.swarmT+=1/60;
+      e.x=e.baseX+Math.sin(e.swarmT*SWARM_WEAVE_FREQ)*SWARM_WEAVE_AMP+e.offX;
+      e.y+=e.speed;
+      e.rot+=0.05;
+      if(e.y>c.height+30){ enemies.splice(i,1); continue; }
+      if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,e.x,e.y,e.size*ENEMY_HIT_SCALE) && invul<=0){
+        takeDamage(player.x,player.y);
+        if(gameState!=="playing") return;
+      }
+      continue;
+    }
+
     e.y+=e.speed;
     e.cd-=1/60;
     if(e.cd<=0){
@@ -4083,25 +6462,69 @@ function updateGameplay(){
     }
   }
 
+  updateMines();
+  if(gameState!=="playing") return;
+
   // boss
   if(bossActive && boss){
     if(boss.enter){
       boss.y+=2;
       if(boss.y>=boss.targetY) boss.enter=false;
     }else{
+      // al 30% de vida entra en furia (una sola vez). Con guardianes vivos el
+      // boss no recibe daño, asi que en la practica es el tramo final 1 contra 1.
+      if(!boss.enraged && boss.life<=boss.maxLife*0.3) enrageBoss();
       boss.x+=boss.dir*boss.moveSpeed*derived.bossMoveSpeedMult;
       if(boss.x<boss.size||boss.x>c.width-boss.size) boss.dir*=-1;
       if(bossCD<=0){
-        const n=boss.shotLines||3;
-        // abanico centrado: con n lineas los angulos quedan repartidos parejo
-        for(let k=0;k<n;k++){
-          const t=(n>1)?(k/(n-1)-0.5):0;
-          enemyBullets.push({x:boss.x,y:boss.y,dx:t*4.5,dy:5});
+        boss.volley++;
+        const live=liveCannons();
+        // sin cañones vivos solo le queda el núcleo; en furia el anillo sale
+        // igual cada 3 rafagas, aunque los cañones esten enteros
+        const ringVolley = !live.length || (boss.enraged && boss.volley%3===0);
+        if(ringVolley){
+          // anillo completo: hay que reposicionarse, no alcanza con esquivar
+          const ring=boss.enraged?12:CORE_RING;
+          const sp=boss.enraged?3.4:2.9;
+          for(let k=0;k<ring;k++){
+            const a=(Math.PI*2/ring)*k + boss.volley*0.2;
+            enemyBullets.push({x:boss.x,y:boss.y,dx:Math.cos(a)*sp,dy:Math.sin(a)*sp+1.2});
+          }
+          boss.coreFlash=1;
+        }else if(boss.enraged){
+          // abanico mas cerrado y apuntado directo al jugador: una bala por cañón
+          const aim=Math.atan2(player.y-boss.y,player.x-boss.x);
+          live.forEach(k=>{
+            const m=cannonAt(k,CANNON_LEN);
+            const a=aim+k.t*0.5;
+            enemyBullets.push({x:m.x,y:m.y,dx:Math.cos(a)*5.5,dy:Math.sin(a)*5.5});
+            k.flash=1;
+          });
+        }else{
+          // abanico centrado: cada bala sale de SU cañón, asi se ve de donde
+          // viene cada linea y cual dejo de tirar
+          live.forEach(k=>{
+            const m=cannonAt(k,CANNON_LEN);
+            enemyBullets.push({x:m.x,y:m.y,dx:k.t*4.5,dy:5});
+            k.flash=1;
+          });
         }
         bossCD=boss.fireCD*derived.enemyFireCDMult;
+        // el núcleo pelado tira mucho mas espaciado que el abanico: volarle
+        // todos los cañones tiene que ser una mejora, no un castigo encubierto
+        if(!live.length) bossCD=Math.max(boss.enraged?0.5:CORE_RING_CD, bossCD*(boss.enraged?1.8:2.6));
       }
     }
     if(boss.hasBeam && !boss.enter) updateBossBeam();
+
+    // brillos de los cañones: fogonazo al disparar, destello blanco al recibir
+    if(boss.cannons){
+      for(const k of boss.cannons){
+        if(k.flash>0) k.flash=Math.max(0,k.flash-1/(60*0.13));
+        if(k.hit>0) k.hit=Math.max(0,k.hit-1/(60*0.11));
+      }
+    }
+    if(boss.coreFlash>0) boss.coreFlash=Math.max(0,boss.coreFlash-1/(60*0.18));
 
     // el boss lastima al tocarlo: sin esto el jugador podia esconderse
     // pegado al borde superior sin recibir daño
@@ -4162,6 +6585,7 @@ function updateGameplay(){
       // perseguidores: misma lógica que el kamikaze
       const dx=player.x-sh.x, dy=player.y-sh.y;
       const len=Math.hypot(dx,dy)||1;
+      const spd=sh.speed*(sh.frenzied?SHARD_FRENZY_SPEED:1);
       if(invul>0 || stunTimer>0){
         // no se abalanzan mientras no pueden hacer daño: orbitan esperando
         sh.orbit=(sh.orbit==null?Math.atan2(-dy,-dx):sh.orbit)+0.05;
@@ -4169,13 +6593,13 @@ function updateGameplay(){
         const ty=player.y+Math.sin(sh.orbit)*95;
         const odx=tx-sh.x, ody=ty-sh.y;
         const olen=Math.hypot(odx,ody)||1;
-        const step=Math.min(sh.speed,olen);
+        const step=Math.min(spd,olen);
         sh.x+=odx/olen*step; sh.y+=ody/olen*step;
         sh.rot=Math.atan2(ody,odx)+Math.PI/2;
       }else{
         sh.orbit=null;
-        sh.x+=dx/len*sh.speed;
-        sh.y+=dy/len*sh.speed;
+        sh.x+=dx/len*spd;
+        sh.y+=dy/len*spd;
         sh.rot=Math.atan2(dy,dx)+Math.PI/2;
         if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,sh.x,sh.y,sh.size)){
           explode(sh.x,sh.y,18);
@@ -4189,12 +6613,20 @@ function updateGameplay(){
     }
   }
 
-  // balas enemigas
+  } // ==== FIN MUNDO ENEMIGO ====
+
+  // balas enemigas: quedan AFUERA del bloque de arriba a proposito. Son lo mas
+  // rapido de la pantalla y saltearles un frame de cada dos las hacia aparecer
+  // de a saltos de 4px durante el tiempo lento, que es exactamente lo contrario
+  // de lo que promete el power-up. Aca avanzan TODOS los frames pero a fxSlow de
+  // velocidad: misma velocidad promedio de siempre, movimiento suave, y la
+  // colision se mide en el doble de puntos del recorrido (mas precisa, no mas
+  // dificil: el hitbox del jugador mide 27px contra pasos de 4).
   for(let i=enemyBullets.length-1;i>=0;i--){
     const b=enemyBullets[i];
-    const bsp=derived.enemyBulletSpeedMult*diff().bulletSpeedMult;
+    const bsp=derived.enemyBulletSpeedMult*diff().bulletSpeedMult*fxSlow;
     b.x+=(b.dx||0)*bsp; b.y+=b.dy*bsp;
-    if(b.y>c.height+20 || b.x<-20 || b.x>c.width+20){ enemyBullets.splice(i,1); continue; }
+    if(b.y>c.height+20 || b.y<-40 || b.x<-20 || b.x>c.width+20){ enemyBullets.splice(i,1); continue; }
     if(circleHit(player.x,player.y,PLAYER_HIT_RADIUS,b.x,b.y,BULLET_HIT_RADIUS) && invul<=0){
       enemyBullets.splice(i,1);
       takeDamage(player.x,player.y);
@@ -4221,22 +6653,44 @@ function updateGameplay(){
     }
   }
 
-  // partículas
+  // ==== CAPA VISUAL DEL MUNDO ====
+  // Particulas y ondas: no tocan a nadie, pero son lo que hace que la camara
+  // lenta se vea. Con fxSlow se abren despacio y duran el doble (la vida baja de
+  // a 0.5 por frame en vez de 1). Sin corte potato nuevo: es una multiplicacion
+  // por frame, y `explode` ya recorta las particulas al 35% en ese modo.
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i];
-    p.x+=p.dx; p.y+=p.dy; p.life--;
+    p.x+=p.dx*fxSlow; p.y+=p.dy*fxSlow; p.life-=fxSlow;
     if(p.life<=0) particles.splice(i,1);
   }
 
-  // spawn de enemigos: se acelera con el nivel de dificultad (reloj)
-  enemySpawnTimer-=1/60;
-  if(enemySpawnTimer<=0 && !bossActive){
-    spawnEnemy();
-    const lvl=difficultyLevel();
-    const base=Math.max(0.35,1-lvl*0.10);
-    enemySpawnTimer=base*derived.enemySpawnIntervalMult;
-    // desde el nivel 4 aparecen de a dos por tanda
-    if(lvl>=4) spawnEnemy();
+  // ondas de estallido de las minas: viven aca y no en `updateMines` (que corre a
+  // saltos con el slowmo) justo para poder expandirse suave a media velocidad
+  for(let i=mineBlasts.length-1;i>=0;i--){
+    mineBlasts[i].t-=(1/60/0.35)*fxSlow;
+    if(mineBlasts[i].t<=0) mineBlasts.splice(i,1);
+  }
+
+  // carteles flotantes ("CADENA x5", "+320"): esto es LECTURA, no mundo. Van en
+  // tiempo real aunque todo lo demas este en camara lenta, igual que el HUD y
+  // que el medidor de racha; si no, el numero se te queda pegado en pantalla.
+  for(let i=floatTexts.length-1;i>=0;i--){
+    floatTexts[i].t-=1/60/1.1;
+    if(floatTexts[i].t<=0) floatTexts.splice(i,1);
+  }
+
+  // spawn de enemigos: se acelera con el nivel de dificultad (reloj).
+  // Tambien entra en el tiempo lento: durante el slowmo la tanda tarda el doble.
+  if(worldStep){
+    enemySpawnTimer-=1/60;
+    if(enemySpawnTimer<=0 && !bossActive){
+      spawnEnemy();
+      const lvl=difficultyLevel();
+      const base=Math.max(0.35,1-lvl*0.10);
+      enemySpawnTimer=base*derived.enemySpawnIntervalMult;
+      // desde el nivel 4 aparecen de a dos por tanda
+      if(lvl>=4) spawnEnemy();
+    }
   }
 
   // power-up cada N puntos
@@ -4262,10 +6716,297 @@ function updateGameplay(){
 /* ================= LOOP PRINCIPAL ================= */
 function loop(){
   requestAnimationFrame(loop);
+
+  // hitstop: congela la simulacion un instante, pero el temporizador corre siempre.
+  // El freeze de muerte de boss usa el mismo interruptor, solo que mucho mas largo.
+  const frozen = hitStopT>0 || bossDeathFX>0;
+  if(hitStopT>0) hitStopT=Math.max(0,hitStopT-1/60);
+  if(bossDeathFX>0) bossDeathFX=Math.max(0,bossDeathFX-1/60/BOSS_DEATH_FX_TIME);
+
+  // temblor de camara: la amplitud cae con el tiempo que le queda
+  let ox=0, oy=0;
+  if(shakeT>0){
+    shakeT=Math.max(0,shakeT-1/60);
+    const amp=shakeMag*(shakeT/shakeT0);
+    ox=Math.round((Math.random()*2-1)*amp);
+    oy=Math.round((Math.random()*2-1)*amp);
+  }
+  if(hurtFlash>0) hurtFlash=Math.max(0,hurtFlash-1/60/0.45); // se apaga en ~0.45s
+  if(chromAb>0) chromAb=Math.max(0,chromAb-1/60/0.35);       // pulso mas corto que el flash
+  if(edgeFlashT>0) edgeFlashT=Math.max(0,edgeFlashT-1/60/0.3); // pulso corto: puede repetirse cada pocos frames
+  if(recordFX>0) recordFX=Math.max(0,recordFX-1/60/RECORD_FX_TIME);
+
+  const shaking = ox!==0 || oy!==0;
+  if(shaking){ ctx.save(); ctx.translate(ox,oy); }
   drawBackground();
-  if(gameState==="playing" && !settingsOpen) updateGameplay();
+  if(gameState==="playing" && !settingsOpen && !frozen) updateGameplay();
   if(gameState==="playing" || gameState==="dead") drawGameplay();
-  if(gameState==="playing") updateHUD();
+  if(shaking) ctx.restore();
+
+  // la aberracion desalinea el mundo entero ya dibujado; el flash va encima
+  if(chromAb>0 && (gameState==="playing" || gameState==="dead")) drawChromatic();
+  // el flash rojo va anclado a la pantalla, no al mundo que tiembla
+  if(hurtFlash>0 && (gameState==="playing" || gameState==="dead")) drawHurtFlash();
+  // tinte cian de tiempo lento, anclado a la pantalla (solo mientras se juega)
+  if(slowmoTimer>0 && gameState==="playing") drawSlowmo();
+  // marco con el color de lo ultimo que caiste, solo durante una cadena
+  if(edgeFlashT>0 && gameState==="playing") drawKillEdgeFlash();
+  // el festejo va arriba de todo el mundo, pero abajo del HUD
+  if(recordFX>0 && gameState==="playing") drawRecordFlash();
+  // freeze+zoom de muerte de boss: encima de todo lo anterior, mundo ya oscurecido
+  if(bossDeathFX>0 && gameState==="playing") drawBossDeathFreeze();
+  if(gameState==="playing"){ drawCombo(); updateHUD(); }
+}
+
+/* Medidor de racha: aparece sobre el borde derecho solo cuando hay bonus real
+   (>=5 kills). El numero grande es el multiplicador; abajo, la cuenta de kills
+   y una barra con lo que queda de la ventana. */
+function drawCombo(){
+  const bonus=comboBonus();
+  if(bonus<=0) return;
+  const mult=1+bonus;
+  const frozen=slowmoTimer>0; // el tiempo lento congela la ventana: no se desvanece
+  const guarded=comboGuardTimer>0; // el seguro de racha esta armado
+  const alpha=frozen?1:Math.min(1,comboTimer/0.8); // se desvanece en el ultimo tramo
+  if(alpha<=0.02) return;
+  const col=frozen?"#00f6ff":(bonus>=COMBO_MAX_BONUS?"#ff2d55":"#ffe94d");
+  const pop=1+comboPulse*0.35;
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.translate(c.width-24, c.height*0.40);
+  ctx.scale(pop,pop);
+  ctx.textAlign="right";
+  ctx.textBaseline="alphabetic";
+  ctx.fillStyle=col;
+  if(!potatoMode){ ctx.shadowColor=col; ctx.shadowBlur=16; }
+  ctx.font="900 34px 'Orbitron',sans-serif";
+  ctx.fillText("×"+mult.toFixed(1),0,0);
+  ctx.shadowBlur=0;
+  ctx.font="bold 12px 'Share Tech Mono',monospace";
+  ctx.fillStyle="rgba(255,233,77,0.85)";
+  if(bonus>=COMBO_MAX_BONUS) ctx.fillStyle="rgba(255,45,85,0.9)";
+  if(frozen) ctx.fillStyle="rgba(0,246,255,0.9)";
+  // los dos iconos conviven: ◐ dice "la ventana esta congelada", ◈ dice "un
+  // golpe no te corta". Son promesas distintas y se pueden tener las dos.
+  ctx.fillText("RACHA "+comboKills+(frozen?" ◐":"")+(guarded?" ◈":""),0,16);
+  const bw=92,bh=4;
+  ctx.fillStyle="rgba(255,255,255,0.18)";
+  ctx.fillRect(-bw,24,bw,bh);
+  ctx.fillStyle=col;
+  ctx.fillRect(-bw,24,bw*Math.max(0,Math.min(1,comboTimer/COMBO_WINDOW)),bh);
+  if(guarded || comboGuardFlash>0){
+    // marco rosa ALREDEDOR de la barra: el seguro envuelve la ventana, no la
+    // llena. Cuando el seguro se gasta, el marco pega el destello y se va.
+    const gf=comboGuardFlash;
+    ctx.strokeStyle="rgba(255,47,176,"+(0.55+gf*0.45)+")";
+    ctx.lineWidth=1+gf*1.6;
+    ctx.strokeRect(-bw-2.5,21.5,bw+5,bh+5);
+  }
+  ctx.restore();
+}
+
+/* Aberracion cromatica: separa el canal rojo del cian y los vuelve a sumar
+   corridos unos px. Rojo + cian = blanco, asi que con desplazamiento 0 la
+   imagen queda identica; el pulso solo desalinea los canales un instante.
+   Se aplica sobre el mundo ya dibujado, antes del flash y del HUD. */
+function ensureFxCanvas(){
+  if(!fxCanvas){
+    fxCanvas=document.createElement("canvas"); fxCtx=fxCanvas.getContext("2d");
+    fx2Canvas=document.createElement("canvas"); fx2Ctx=fx2Canvas.getContext("2d");
+  }
+  if(fxCanvas.width!==c.width || fxCanvas.height!==c.height){
+    fxCanvas.width=fx2Canvas.width=c.width;
+    fxCanvas.height=fx2Canvas.height=c.height;
+  }
+}
+
+function drawChromatic(){
+  const d=chromAb*7; // px de separacion en el pico
+  if(d<0.6 || c.width<2 || c.height<2) return; // sin lienzo no hay nada que separar
+  ensureFxCanvas();
+  fxCtx.clearRect(0,0,c.width,c.height);
+  fxCtx.drawImage(c,0,0);
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle="#000";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.globalCompositeOperation="lighter";
+  // canal rojo hacia un lado, cian hacia el otro
+  const capas=[{col:"#ff0000",dx:d,dy:-d*0.35},{col:"#00ffff",dx:-d,dy:d*0.35}];
+  capas.forEach(l=>{
+    fx2Ctx.globalCompositeOperation="source-over";
+    fx2Ctx.clearRect(0,0,c.width,c.height);
+    fx2Ctx.drawImage(fxCanvas,0,0);
+    fx2Ctx.globalCompositeOperation="multiply";
+    fx2Ctx.fillStyle=l.col;
+    fx2Ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(fx2Canvas,l.dx,l.dy);
+  });
+  ctx.restore();
+}
+
+function drawHurtFlash(){
+  const a=hurtFlash*0.55;
+  ctx.save();
+  if(potatoMode){
+    ctx.fillStyle="rgba(255,45,85,"+(a*0.5)+")";
+    ctx.fillRect(0,0,c.width,c.height);
+  }else{
+    const mn=Math.min(c.width,c.height), mx=Math.max(c.width,c.height);
+    const g=ctx.createRadialGradient(c.width/2,c.height/2,mn*0.32,c.width/2,c.height/2,mx*0.72);
+    g.addColorStop(0,"rgba(255,45,85,0)");
+    g.addColorStop(1,"rgba(255,45,85,"+a+")");
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,c.width,c.height);
+  }
+  ctx.restore();
+}
+
+/* Tiempo lento: viñeta cian que respira, con un marco fino. Se desvanece en el
+   ultimo medio segundo. En potato: solo el marco, sin gradiente de pantalla. */
+function drawSlowmo(){
+  const a=Math.min(1,slowmoTimer/0.5);
+  if(a<=0.02) return;
+  const pulse=0.7+0.3*Math.sin(time*7);
+  ctx.save();
+  if(potatoMode){
+    ctx.strokeStyle="rgba(0,246,255,"+(0.22*a)+")";
+    ctx.lineWidth=6;
+    ctx.strokeRect(3,3,c.width-6,c.height-6);
+  }else{
+    const mn=Math.min(c.width,c.height), mx=Math.max(c.width,c.height);
+    const g=ctx.createRadialGradient(c.width/2,c.height/2,mn*0.36,c.width/2,c.height/2,mx*0.78);
+    g.addColorStop(0,"rgba(0,246,255,0)");
+    g.addColorStop(1,"rgba(0,246,255,"+(0.17*a*pulse)+")");
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.strokeStyle="rgba(0,246,255,"+(0.34*a)+")";
+    ctx.lineWidth=2;
+    ctx.strokeRect(6,6,c.width-12,c.height-12);
+  }
+  ctx.restore();
+}
+
+/* Record roto: destello del borde de pantalla en amarillo (el color del record
+   y del puntaje en el HUD) + cartel al centro. Va anclado a la pantalla, no al
+   mundo que tiembla, y solo mientras se juega. La placa de la esquina se
+   esconde en pantallas bajitas, asi que este cartel es el aviso que siempre se
+   ve. En potato: marco plano de un color, sin degrades ni glow. */
+function drawRecordFlash(){
+  const a=recordFX;
+  if(a<=0.02) return;
+  ctx.save();
+  if(potatoMode){
+    ctx.strokeStyle="rgba(255,233,77,"+(0.5*a)+")";
+    ctx.lineWidth=8;
+    ctx.strokeRect(4,4,c.width-8,c.height-8);
+  }else{
+    // cuatro degrades que entran desde cada borde y se afinan al apagarse
+    const th=Math.min(c.width,c.height)*0.22*(0.5+0.5*a);
+    const peak=0.5*a;
+    const lados=[
+      {gx0:0,gy0:0,gx1:0,gy1:th,                 x:0,y:0,w:c.width,h:th},
+      {gx0:0,gy0:c.height,gx1:0,gy1:c.height-th, x:0,y:c.height-th,w:c.width,h:th},
+      {gx0:0,gy0:0,gx1:th,gy1:0,                 x:0,y:0,w:th,h:c.height},
+      {gx0:c.width,gy0:0,gx1:c.width-th,gy1:0,   x:c.width-th,y:0,w:th,h:c.height}
+    ];
+    lados.forEach(l=>{
+      const g=ctx.createLinearGradient(l.gx0,l.gy0,l.gx1,l.gy1);
+      g.addColorStop(0,"rgba(255,233,77,"+peak+")");
+      g.addColorStop(1,"rgba(255,233,77,0)");
+      ctx.fillStyle=g;
+      ctx.fillRect(l.x,l.y,l.w,l.h);
+    });
+    ctx.strokeStyle="rgba(255,233,77,"+Math.min(1,0.9*a)+")";
+    ctx.lineWidth=3;
+    ctx.strokeRect(1.5,1.5,c.width-3,c.height-3);
+  }
+  // cartel: aguanta un toque mas que el borde y arranca con un pop
+  const ta=Math.min(1,a/0.7);
+  const pop=1+Math.max(0,1-(1-a)/0.16)*0.4;
+  ctx.globalAlpha=ta;
+  ctx.translate(c.width/2,c.height*0.30);
+  ctx.scale(pop,pop);
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+  ctx.fillStyle="#ffe94d";
+  if(!potatoMode){ ctx.shadowColor="#ffe94d"; ctx.shadowBlur=24; }
+  // 0.075 y no 0.085: con el pop de 1.4x el titulo tiene que entrar igual en 320px de ancho
+  ctx.font="900 "+Math.round(Math.min(c.width*0.075,44))+"px 'Orbitron',sans-serif";
+  ctx.fillText("¡RÉCORD ROTO!",0,0);
+  ctx.shadowBlur=0;
+  ctx.font="bold 13px 'Share Tech Mono',monospace";
+  ctx.fillStyle="rgba(255,233,77,0.85)";
+  ctx.fillText("le pasaste a "+recordAtRunStart,0,30);
+  ctx.restore();
+}
+
+function hexToRgb(hex){
+  const h=hex.replace("#","");
+  return parseInt(h.substring(0,2),16)+","+parseInt(h.substring(2,4),16)+","+parseInt(h.substring(4,6),16);
+}
+
+/* Marco de borde con el color de lo ultimo que mataste, SOLO mientras estas en
+   cadena (`registerKill` recien lo dispara desde `comboKills>=2`). Mismo
+   esqueleto que `drawRecordFlash` (degrades desde los 4 bordes) pero con el
+   color puesto por JS via `edgeFlashColor` en vez de fijo, sin cartel de texto
+   y bastante mas corto (0.3s contra 0.7s) porque se re-dispara con cada kill
+   de la racha en vez de una vez por partida. Antes la racha solo cambiaba de
+   NUMERO; ahora tambien avisa DE QUE COLOR fue el ultimo bicho que caiste,
+   sin agregar una sola paleta nueva (reusa los colores con los que cada
+   enemigo ya se dibuja). */
+function drawKillEdgeFlash(){
+  const a=edgeFlashT;
+  if(a<=0.02) return;
+  const rgb=hexToRgb(edgeFlashColor);
+  ctx.save();
+  if(potatoMode){
+    ctx.strokeStyle="rgba("+rgb+","+(0.4*a)+")";
+    ctx.lineWidth=6;
+    ctx.strokeRect(3,3,c.width-6,c.height-6);
+  }else{
+    const th=Math.min(c.width,c.height)*0.16*a;
+    const peak=0.42*a;
+    const lados=[
+      {gx0:0,gy0:0,gx1:0,gy1:th,                 x:0,y:0,w:c.width,h:th},
+      {gx0:0,gy0:c.height,gx1:0,gy1:c.height-th, x:0,y:c.height-th,w:c.width,h:th},
+      {gx0:0,gy0:0,gx1:th,gy1:0,                 x:0,y:0,w:th,h:c.height},
+      {gx0:c.width,gy0:0,gx1:c.width-th,gy1:0,   x:c.width-th,y:0,w:th,h:c.height}
+    ];
+    lados.forEach(l=>{
+      const g=ctx.createLinearGradient(l.gx0,l.gy0,l.gx1,l.gy1);
+      g.addColorStop(0,"rgba("+rgb+","+peak+")");
+      g.addColorStop(1,"rgba("+rgb+",0)");
+      ctx.fillStyle=g;
+      ctx.fillRect(l.x,l.y,l.w,l.h);
+    });
+  }
+  ctx.restore();
+}
+
+/* Freeze-frame de muerte de boss: el mundo entero esta quieto (loop() salta
+   updateGameplay mientras bossDeathFX>0) y encima se agranda la silueta del
+   boss en la pose que tenia al morir, con un aro blanco que se cierra. Cuando
+   el freeze termina, el burst de particulas de siempre (ya disparado por
+   registerKill en el instante de la muerte, pero congelado sin animar) se
+   libera de golpe: el freeze es la anticipacion, la explosion es el pago. */
+function drawBossDeathFreeze(){
+  const k=1-bossDeathFX; // 0 -> 1: progreso del freeze
+  const pop=Math.min(1,k*2.4);
+  const scale=1+1.5*(1-Math.pow(1-pop,3)); // ease-out cubico: 1x -> 2.5x
+  ctx.save();
+  ctx.fillStyle="rgba(4,2,10,"+(0.35+0.4*k)+")";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.restore();
+  polygon(bossDeathX,bossDeathY,7,bossDeathSize*scale,bossDeathColor,40,bossDeathRot);
+  ctx.save();
+  ctx.strokeStyle="rgba(255,255,255,"+(0.6*bossDeathFX)+")";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.arc(bossDeathX,bossDeathY,bossDeathSize*scale+14,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 /* ================= INIT ================= */
@@ -4274,8 +7015,22 @@ requestAnimationFrame(loop);
 Promise.all([
   StorageHelper.get(HS_KEY,0),
   StorageHelper.get(BESTS_KEY,null),
-  StorageHelper.get(DIFF_KEY,"facil")
-]).then(([legacy,bests,diffKey])=>{
+  StorageHelper.get(DIFF_KEY,"facil"),
+  StorageHelper.get(BESTRANKS_KEY,null),
+  StorageHelper.get(BESTSTATS_KEY,null)
+]).then(([legacy,bests,diffKey,bestRanks,bestStats])=>{
+  if(bestRanks && typeof bestRanks==="object"){
+    bestRankByDifficulty=Object.assign({facil:"",normal:"",dificil:"",experto:""},bestRanks);
+  }
+  // clave nueva: si no está (o está a medias), cada dificultad arranca en 0/0
+  if(bestStats && typeof bestStats==="object"){
+    ["facil","normal","dificil","experto"].forEach(k=>{
+      const v=bestStats[k];
+      if(v && typeof v==="object"){
+        bestStatsByDifficulty[k]={acc:Math.max(0,v.acc|0), combo:Math.max(0,v.combo|0)};
+      }
+    });
+  }
   if(bests && typeof bests==="object"){
     bestByDifficulty=Object.assign({facil:0,normal:0,dificil:0,experto:0},bests);
   }else if(legacy){
